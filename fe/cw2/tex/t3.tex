@@ -1,0 +1,56 @@
+The aspect ratios for Jianer are
+\begin{itemize}
+\item Quad Element
+  \begin{description}
+  \item[{AR}] 2.67
+  \item[{x}] 0.75 in
+  \item[{y}] 2.00 in
+  \end{description}
+\item Tri Element
+  \begin{description}
+  \item[{AR}] 6
+  \item[{x}] 48 in
+  \item[{y}] 8 in
+  \end{description}
+\end{itemize}
+\def\g#1{\MyGet{t3.#1}}
+To calculate the vertical displacement at tip, we start with
+\def\i{\text{in}}
+\begin{align*}
+  L &= \g{L} \i\\
+  b &= \g{b} \i\\
+  h &= \g{h} \i\\
+  P &= \g{P} \text{kip}.
+\end{align*}
+Therefore for the analytical expression, we have
+\begin{align*}
+  A &= bh = \g{b} \i \times \g{h} \i = \g{A} \i^2\\
+  I &= \frac{bh^3}{12} = \frac{\g{b} \times \g{h}^3}{12} = \g{I} \text{m}^4 \\
+  E &= \g{E} \text{ksi}\\
+  G &= \g{G} \text{ksi}\\
+  k &= \g{k}
+\end{align*}
+Therefore,
+\begin{align*}
+  V_y &= \frac{PL^3}{3EI} + \frac{PL}{kAG} \\
+      &= \frac{\g{P} \times \g{L}^3}{3 \times \g{E} \times \g{I}} +
+        \frac{\g{P} \times \g{L}}{\g{k} \times \g{A} \times \g{G}} \\
+      &= \g{Vy} \i
+\end{align*}
+The comparison of results are shown below:
+\begin{center}
+  \begin{tabular}{ll}
+    Source & Displacement \(v_y\) (in)\\
+    \hline
+    Hand Calc   & \g{Vy} \\
+    GSA 64-by-4 quad elements & 1.213       \\
+    GSA 1-by-1 tri elements   & 0.0538
+  \end{tabular}
+\end{center}
+We observe that, the 64-by-4 quad element mesh gives a much better closer result
+than the 1-by-1 tri element mesh. (The later is not acceptable in fact.) So, a
+good mesh is a fine mesh. I personally think a mesh is fine enough if the result
+would not be much different by further refining the mesh.
+
+For example, a 128-by-16 quad element mesh would be a fine enough mesh for our
+example. And our 1-by-1 tri element mesh is an example of a coarse mesh.

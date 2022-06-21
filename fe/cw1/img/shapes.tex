@@ -1,0 +1,85 @@
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \begin{scope}
+    % \draw[style=help lines,step=1cm] (0,-1) grid (11,5);
+
+    \foreach \y in {0,1,2,3,4}{%
+      \foreach \x in {0,7}{%
+        \draw[-latex,thick] (\x,\y) -- +(4.3,0);
+        \foreach \z in {0,1,2,3,4}{
+          \fill[black] (\x + \z, \y) circle (1pt);
+        }
+      }
+
+
+
+      \newcommand{\myh}{0.5}
+      \draw (0,4) -- ++(0,\myh) -- ++(1,-\myh);
+      \draw (3,0) -- ++(1,\myh) -- ++(0,-\myh);
+      \foreach \i in {0,1,2}{
+        \draw (\i, 3 - \i) -- ++(1,\myh) -- ++(1,-\myh);
+      }
+    }
+
+    \foreach \i in {0,1,2,3}{
+      \foreach \j in {0,0.7}{
+        \draw (7 + \i, 3 - \i + \j) rectangle +(1,0.3);
+      }
+    }
+    \foreach \y in {1,2,3,4,5}{
+      % Label each diagram
+      \node at (5, 5 - \y) {$N_{\y}(x)$};
+      \node at (5 + 7, 5 - \y) {$N_{\y}'(x)$};
+    }
+
+  \end{scope}
+
+  \newdimen\h
+  \h=3.5pt
+
+  % Draw the two dimensions
+  \begin{scope}[draw=black!50]
+    \foreach \i / \j / \l in {0.5 / 4 / L, 1 / 1 / l=\frac{L}{4}}{
+      \draw[thin,<->] (0,-\i) to node[anchor=north] {$\l$} +(\j,0);
+      \draw (0,-\i) -- +(0,\h) -- +(0, -\h)
+      (\j,-\i) -- +(0,\h) -- +(0, -\h);
+    }
+
+    \h=2pt
+    \newcommand{\mydimy}[4]{%
+      \draw[thin,<->] (#1,#2) to node[left] {#4} +(0,#3);
+      \draw (#1,#2) -- +(-\h,0) -- +(\h,0)
+      (#1,#2 + #3) --  +(-\h,0) -- +(\h,0);
+    }
+    % \draw[thin,<->] (-0.3,4) to node[left] {1} +(0,0.5);
+    % \draw (-0.3,4) -- +(-\h,0) -- +(\h,0)
+    % (-0.3,4 + 0.5) --  +(-\h,0) -- +(\h,0);
+    \mydimy{-0.3}{4}{0.5}{1}
+    \mydimy{7-0.3}{3}{0.3}{$\frac{1}{l}$}
+    \mydimy{7-0.3}{3.7}{0.3}{$\frac{1}{l}$}
+  \end{scope}
+
+  \begin{scope}[xshift=7cm,yshift=5cm]
+    \draw[-latex,thick] (0,0) -- +(4.3,0);
+    \draw[thick] (0,0) to node[sloped,above]{$f(x)=x$} (4,4);
+    \foreach \x in {1,2,3,4}{
+      \draw (\x,0) -- (\x,\x);
+    }
+
+    \newcommand{\mynode}[3][(0,0)]{
+      \node[shape=circle, fill=#3,
+      fill opacity=0.5,text opacity=1,font=\footnotesize, shift={#1}] {#2};
+      % \node[shape=circle, fill=gray,
+      % fill opacity=0.5,text opacity=1,font=\footnotesize, shift={(1cm,1cm)}] {2};
+    }
+    % \foreach \i/\j/\c in {0.5/1/\mycola,1.3/2/\mycolb,2.3/3/\mycolc,3.3/4/gray}{
+    %   \mynode[(\i + 0.2, \i -0.2)]{\j}{\c}
+    % }
+    \mynode[(0.7, 0.3)]{1}{\mycola}
+    \mynode[(1.5,0.75)]{2}{\mycolb}
+    \mynode[(2.5,1.25)]{3}{\mycolc}
+    \mynode[(3.5,1.75)]{4}{gray}
+    % \mynode[(0.5 + 0.2, 0.5 -0.2)]{2}{\mycolb}
+    % \mynode[(0.5 + 0.2, 0.5 -0.2)]{3}{\mycolc}
+  \end{scope}
+
+\end{tikzpicture}

@@ -1,0 +1,31 @@
+    Hi there, how should I call you: XX
+
+    --------------------------------------------------
+    Hi XX, my name is Jianer Cong.
+    Just call me Jianer.
+    At the time of this writing, it's 18 May 2022.
+    Today is Wednesday. Weekday.
+    Now it's 12:12 PM,so perhaps I should say "Good Afternoon".
+
+    I am 22 years old, to be exact, it's 8132 days (upto today).
+    I am from UCL, short for University College London.
+    It's a  4-year programme.I started it when I was 18.
+    So, approximately  16 % of my life is spent in this place.
+
+    If nothing goes wrong, I should be able to get a master degree this summer.
+         Something that I am comfortable with are:
+        python, C#, Linux, Engineering Mathmatics, and Data Analysis.
+
+    That's it.
+    This script is run by Python 3.8.10 under system Ubuntu 20.04.4.
+
+    --------------------------------------------------
+
+
+    So yeah. Do you want to give me a chance? [y/n]: n
+    Really ? You wanna say no?[y/n]: y
+    Really Really ? You wanna say no?[y/n]: y
+    Really Really Really ? You wanna say no?[y/n]: n
+
+    So yeah. Do you want to give me a chance? [y/n]: y
+    Thanks boss.

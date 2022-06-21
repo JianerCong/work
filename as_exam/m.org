@@ -1,0 +1,482 @@
+** Three questions
+*** TCC
+**** What's the logitudinal shear force between midspan and support?
+#+begin_src R
+library(assertthat)
+library(cli)
+fmt <- function(d) gettextf('%g',d)
+
+get_concrete_beam_axial_force <- function(Ec = 30000,
+                                          ## concrete E
+                                          ep_ct = 0.00065,
+                                          ## top strain
+                                          ep_cb = 0.0001,
+                                          ## bottom strain
+                                          hc = 70,
+                                          ## section depth
+                                          wc = 500
+                                          ## section width
+                                          ){
+  si_a <- ep_ct * Ec * 0.5
+  r_dc <- ep_ct / (ep_ct + ep_cb)
+  assert_that(r_dc < 1)
+  assert_that(r_dc > 0)
+  dc <- hc * r_dc
+
+  fa <- si_a * dc * wc
+  cli_ol()
+  cli_li("Neutral axis: {fmt(dc)}.")
+  cli_li("Axial force: {fmt(fa)}.")
+  cli_end()
+}
+#+end_src
+**** TCC Q1 P65
+#+begin_src R
+# Q1
+source('tcc.R')
+
+# (b) sketch the profile
+hc=50
+eps=0.000357
+ka=6.9375e-6
+epct=0.0004168 # hand-calculated from (a)
+dj=240
+Ec=32e3
+Et=16e3
+
+o <- tcc_get_strs_strn_profiles(epct,ka,hc,eps,dj,Ec,Et)
+
+# (c) minimum allowable tensile stress in timber
+sig_allowed=o$ep[4] * Et
+#+end_src
+**** TCC Q2 P67
+#+begin_src R
+  library(cli)
+  library(rlang)
+  eps <- 0.0004
+  epct <- 0.0007
+
+  tcbm=env(
+    Ec=30e3, #N/mm2
+    Et=10e3,
+    wc=500,
+    hc=50,
+    dj=200,
+    wj=120
+  )
+
+  source('tcc.R')
+
+  ## Question (a) --------------------------------------------------
+  dc <- tcc_get_dc(epct,eps,tcbm)
+  o_a <- tcc_get_sec_moment(epct,dc,tcbm)
+
+  ## Question (b) --------------------------------------------------
+
+  o <- tcc_no_slip_na_depth(tcbm)
+  o_b <- tcc_no_slip_get_sig_ct(tcbm,o$d_NA,o_a$M)
+  v.('For no-slip case sig_ct = %.3g N/mm2',o_b$sig_ct)
+  v.('For yes-slip case sig_ct = %.3g N/mm2',epct * tcbm$Ec)
+#+end_src
+**** TCC Q3 P69
+#+begin_src R
+library(rlang)
+
+eps<- 0.00035
+epct<- 0.00065
+tcbm=env(
+  Ec=35e3, #N/mm2
+  Et=11e3,
+  wc=400,
+  hc=70,
+  dj=240,
+  wj=100
+)
+
+source('tcc.R')
+
+## (a)
+f12 <- tcc_test_partial_compression(epct,eps,tcbm)
+## Yes, partial compression, so find dc
+dc <- tcc_get_dc(epct,eps,tcbm)
+ka=epct/dc
+ep_bottom=epct+eps-(tcbm$hc+tcbm$dj)*ka
+
+## (b) concrete force
+f = tcbm$Ec*epct*dc*tcbm$wc/2
+
+## (c) timber shear force
+h1 = -ep_bottom / ka
+ft = tcbm$wj*h1*tcbm$Et*ep_bottom/2
+
+#+end_src
+**** TCC Q4 P71
+#+begin_src R
+## TCC P71
+library(rlang)
+tcbm=env(
+  wc=450,
+  hc=60,
+  wj=90,
+  dj=220,
+  Ec=33e3,
+  Et=11e3
+)
+
+epct=0.00063
+dc=2/3*tcbm$hc
+
+source('tcc.R')
+
+## (a)
+eps <- tcc_get_eps(epct,dc,tcbm)
+
+## (b)
+o <- tcc_get_strs_strn_profiles(epct,ka=epct/dc,eps,tcbm)
+
+## (c)
+F1=tcc_get_F1(epct,tcbm$Ec,tcbm$wc,dc)
+F=0.2*F1
+
+## (d)
+ka=epct/dc
+d1=-o$ep[[4]]/ka
+F_shr_t=0.5*tcbm$wj*d1*o$si[[4]]
+
+
+#+end_src
+*** MNA
+**** q1
+#+begin_src R
+  ## MNA Q1
+  h1=319 #the depth from concrete top to tension steel
+  de=319
+  b=200
+
+  Es=200e3
+  Ec=34.85e3
+
+  si_s=500
+  fc=50
+  Ast=453
+
+  source('mna.R')
+
+
+  ## (b) assume steel yield, get dc,ka and M.
+  o_b=mna_get_dc_from_steel_yield2(de,Es,si_s,fc,Ast,b)
+  dc_b=o_b$dc #82.69
+
+  epy=si_s/Es #0.0025
+  ka_b=epy/(de-dc_b)
+
+  epcm_b=epy*dc_b/(de-dc_b)
+  M_b=mna_get_M(b,Ec,fc,Ast,si_s,epcm=epcm_b,dc=dc_b,de) #65833551.6
+
+  ## (c)
+  epcm=0.0035
+  o_c=mna_get_dc_from_conc_crash(b,Ec,fc,Ast,si_s,epcm)
+  dc_c=o_c$dc #31.29
+  M_c=mna_get_M2(b,Ec,fc,Ast,si_s,epcm,dc_c,de) #69486248.0
+#+end_src
+**** q2 and q3
+#+begin_src R
+## MNA Q2 and Q3
+Es=200e3
+Ec=34.85e3
+si_s=500
+fc=50
+Ast=453
+b=200
+de=319 #the depth from concrete top to tension steel
+
+source('mna.R')
+ApEp=b*1*160e3 #b x FRP_thickness x Ep
+AscEs=0
+ccs=0
+h=354
+
+k=mna_get_ks(b,Ec,fc,Ast,si_s,ApEp,AscEs,h,ccs)
+
+## (a) Establish how far beyond first yield the steel reinf is when the concrete crushes.
+## --------------------------------------------------
+epcm=0.0035
+o_a <- mna_get_dc_from_conc_crash2(b,Ec,fc,Ast,si_s,epcm,ApEp,AscEs,ccs,h)
+
+ep1=o_a$epcm-o_a$ka*de #should be negative
+eps=si_s/Es
+factor_above_yield=-ep1/eps
+
+## (b) For the state (crushing defined in (a)), determine the section moment.
+## --------------------------------------------------
+o_b <- mna_get_M2(b,Ec,fc,Ast,si_s,epcm,o_a$dc,de,ApEp,AscEs,h,ccs)
+
+## (c) Calculate the first yield moment.
+## --------------------------------------------------
+o_c <- mna_get_dc_from_steel_yield2(h1,Es,si_s,fc,Ast,b,ApEp,AscEs,h,ccs)
+
+## (d) compare the concrete crash moment in (b) and that in (c)
+o_d <- mna_get_M2(b,Ec,fc,Ast,si_s,epcm=o_c$epcm,dc=o_c$dc,de,ApEp,AscEs,h,ccs)
+M1=o_b$M
+M2=o_d$M
+
+
+## Q3 --------------------------------------------------
+## (a) Determine the axial stress in FRP plate at the minimum and maximum moment
+## locations within the elasto-plastic zone along the beam.
+Ep = 160e3 #N/mm2 E for FRP
+
+## minimum case
+ep_FRP_min = local({
+  dc=o_c$dc
+  o_c$epcm * (h-dc)/dc
+})
+si_FRP_min = ep_FRP_min * Ep
+
+ep_FRP_max = local({
+  dc=o_a$dc
+  o_a$epcm * (h-dc)/dc
+})
+si_FRP_max = ep_FRP_max * Ep
+
+## (b) estimate the average shear stress between the FRP plate and the concrete
+## beam within this elasto-plastic zone along the beam.
+l=2100
+ta= (si_FRP_max - si_FRP_min)/l
+
+## (c) use formulae from notes
+tcc_get_phi <- function(dc,epcm,k){
+  a1=2*dc*epcm * (k[2]*epcm -1) *k[1]
+  a2=- k[3] *epcm + k[5]
+  a3=(1-2*k[2]*epcm) * dc * k[1] + k[3]
+  phi=(a1+a2)/(a3*dc - k[4])
+  phi=-phi # should be positive
+  phi
+}
+
+phi=tcc_get_phi(dc=o_c$dc, epcm=o_c$epcm, k=k)
+
+# 太难 跳了先
+dc=o_c$dc
+epcm=o_c$epcm
+m=o_d$M
+
+a1=(8-9*k[2]*epcm)*(phi * dc + 3*epcm)
+a2=9*k[2]*phi*dc*epcm
+a3=dc^2 * k[1]
+
+a4=(de - 2*dc)*k[5]
+a5=(dc - ccs) *(phi*(dc-ccs) + 2*epcm) * k[6]
+a6=(h-dc)*(phi*(h-dc) - 2*epcm) *k[7] - m
+
+psi= (a1 - a2)*a3 + 12 * (a4 + a5 + a6)
+
+
+#+end_src
+*** DS
+**** Q0
+#+begin_src R
+  source('lib.R')
+  source('ds.R')
+
+  ## kN, m
+  h=200
+  b=75
+
+  w_t=9
+  l_t=6
+  Me=4
+
+  w=w_t/2
+  l=l_t/2
+  Mn=Me/(w*l)
+
+  Ep=200
+  Et=10
+
+  ## (b) check that 3.2mm FRP is enough
+  hf=3.2 # assumed FRP plate
+
+
+  la=sqrt(1-2*Mn)
+  R=ds_get_R_from_la_Mn(la,Mn)
+
+  I_end=b*h^3/12
+  I_mid=R*I_end #the required I in the middle
+
+
+  o= ds_get_I(b,h,hf,Ep,Et)
+  if (o$I > I_mid){
+    v.('I(%.3g) > I_mid(%.3g), so hf = %g is Okay',I,I_mid,hf)
+  }
+
+#+end_src
+**** Q1
+#+begin_src R
+  ## Q1
+  source('lib.R')
+  source('ds.R')
+
+  ## kN, m
+  h=200
+  b=75
+
+  l_t=6
+  ## tensile and compressive stress
+  sig_t=8
+  sig_c=10
+
+  Ep=200
+  Et=10
+  hf=2.14
+  l=l_t/2
+
+  ## (a) Determine R
+  I_end=b*h^3/12
+  o_a=ds_get_I(b,h,hf,Ep,Et)
+  I_mid=o_a$I
+  R=I_mid/I_end
+
+  ## (b) find la value that gives minimum hog moment
+  la=ds_get_la_from_R(R)
+
+  ## (c) If this la just activates joist capacity,what's the UDL
+  I=b*h^3/12
+  y=h/2
+
+  Mn=(1-la^2)/2
+  Mcap=(sig_t * I /y)/1e6
+  Me=Mcap
+
+  w=Me/(Mn*l)
+  w_t=w*2
+
+  ## (d) For this UDL, what're the peak flexual stresses in the joist for simple
+  ## support.
+  I=o_a$I
+  M=(w*l/2)*1e6
+  dc=o_a$dc
+  y=c(
+    h+hf-dc,
+    dc-hf
+  )
+  sig=M*y/I
+
+#+end_src
+**** Q2
+#+begin_src R
+source('lib.R')
+source('ds.R')
+
+Mmid=0.23 #WL
+
+## (a) What's the hog moment at the ends of the span (in terms of W and L)?
+Mn=0.5-Mmid
+
+## (b) If R=2.8, over what range of la is this end-moment not exceeded
+R=2.8
+r=ds_get_la_range_from_R_Mn(R,Mn)
+
+## (c) If la <=0.4, what's the minimum admissible R value ?
+la=0.4
+R=ds_get_R_from_la_Mn(la,Mn)
+
+#+end_src
+**** Q3
+#+begin_src R
+source('lib.R')
+source('ds.R')
+
+R=2
+la=ds_get_la_from_R(R)
+me=(1-la^2)/2
+
+# (b)
+R=ds_get_R_from_la_Mn(la=0.75,Mn=0.25)
+
+# (c)
+a=0.25-0.13
+b=sqrt(1-2*a)
+x=1+c(b,-b)
+#+end_src
+**** Q4
+#+begin_src R
+source('lib.R')
+source('ds.R')
+
+#(b)
+me=0.32
+R=1.5
+l = ds_get_la_range_from_R_Mn(R,Mn=me)
+
+#(c)
+la=0.5
+Mn=0.28
+R=ds_get_R_from_la_Mn(la,Mn)
+
+#(d) use equilibrium to find M at mid span
+M=0.5 + Mn -1
+#+end_src
+** notebook
+*** TCC
+#+begin_src python
+from sympy import *
+
+# the polynomial for dc assuming the steel is yielded
+# When there's no FRP and compression steel
+k1,k2,k5,eps,h1,dc,ds=symbols('k1 k2 k5 \\epsilon_{s} h1 d_c d_s',positive=True)
+epcm=eps*dc/(h1-dc)
+e1 = Eq(k1*epcm*(1-k2*epcm)*dc - k5,0)
+
+# Sympy
+l1 = e1.lhs.simplify();l1
+l1 = l1*(dc-h1)**2;l1
+l1 = l1.expand();l1
+l1 = collect(l1,dc)
+l1.simplify()
+# My algebra
+v1 = Matrix([h1,-(1+k2*eps)])*k1*eps
+v2 = Matrix([dc**2, dc**3])
+
+v3 = Matrix([h1**2, -2*h1, 1])*k5
+v4 = Matrix([1,dc,dc**2])
+
+
+
+l2 = (v1.T * v2)[0] - (v3.T * v4)[0]
+l2 = collect(l2,dc)
+l2.simplify()
+
+l2.equals(l1) #is my algebra OK?
+
+from sympy import *
+# the polynomial for dc assuming the steel is yielded when there is FRP and compression steel
+k1,k2,k3,k4,k5=symbols('k1:6')
+de,dc,epcm,eps=symbols('d_e d_c \\epsilon_{cm} \\epsilon_{s}')
+
+A=k1*epcm*(1-k2*epcm)
+B=k3*epcm-k5
+C=k4*epcm
+
+pl=A*(dc**2) + B*dc - C
+pl
+
+pl=pl.subs(epcm,eps*dc/(de-dc));pl
+pl=pl.expand();pl
+
+# factor out 1
+pl=pl*((de-dc)**2)
+pl=pl.simplify()
+pl
+
+pl=pl/dc
+pl
+
+collect(pl,dc)
+#+end_src
+* End
+  
+
+# Local Variables:
+# org-what-lang-is-for: "R"
+# End:

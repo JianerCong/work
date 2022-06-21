@@ -1,0 +1,884 @@
+* Sub1: due on Nov-26
+  Conceptual design, calculation of all loads and initial frame analysis under
+  the combined dead, live and earthquake loads (40%).
+* EC 8
+** 1.1 Scope
+*** Does EC 8 cares about nuclear power plants?
+*** What each section cover?
+**** 2
+basic perforn1ance requirements and conlpliance criteria applicable to buildings
+and civil engineering works
+**** 3
+Gives the ru1es for the representation of seismic actions and for their
+cOlnbination with other actions.
+**** 4
+general design rules for buildings
+**** 5-9
+Section 5:  Specific rules for concrete buildings; 
+Section 6:  Specific rules for buildings; 
+Section 7:  Specific rules for composite  steel-concrete buildings; 
+Section 8:  Specific rules for timber buildings; 
+Section 9:  Specific rules for masonry buildings.
+** 1.3 What is another assumption
+   No changes in structure, even it's an reinforcement.
+** Defs
+1. behaviour-factor: factor that reduce linear force which accounts for
+   non-linearality.
+2. capacity-design : A energy-based design
+3. dissipative structure : "bulky" structure. (a structure with a spring?)
+4. dissipative zones: the spring of the structure.
+5. dynamically independent unit : 独栋
+6. importance factor : ...
+7. non-dissipative structure : linear structure for a particular seismic
+   design situation
+8. non-structural element : ...
+9. primary seismic members : 算数的
+10. secondary seismic members : for gravity load caused by earthquack
+** 2.1 Fundamental requirements
+*** (1) Collapse and Damage
+**** EQ that should not collapse ?
+ 1. A probability $P_{NCR}$(=10%) [reference probability of exceedance] in 50 yrs
+    or return period $T_{NCR}$(475 yr) [reference return period]
+    # To be found in National Annex
+ 2. The importance factor(ga)
+
+
+ If an event has probability $P_R$ in $T_R$, you can also specify the *mean
+ return period* \(T_R = - T_L \ ln(1 - P_R)\)
+**** EQ that should not causes damage ?
+ The building should not be damage for event with
+ $P_{DLR}$(=10%) in 10 yr, and a return $T_{DLR}$(95 yr)
+
+ When lack of data -> 4.4.3.2
+*** (2) Who can alter (1)
+National Authority or Collapsed engineering works.
+*** (3) Different Structure, Different event
+Structures are put into different *classes*. Each *class* has an importance
+factor(IF). IF affect the event param (P and T)
+*** (4) Factor described in (3) is multiplied
+to event actions, so that we get a new period (???)
+** 2.2 Complience Crit
+*** 2.2.1 General
+**** (1) Two LS -v (2.1-(1))
+ 1. Ultimate Limit State (aka Collapse Limit State)
+ 2. Damage Limit State 
+ => 2.1
+**** (3) For low ses str => 3.2.1(4) 
+**** (4) For very-low ses str =>3.2.1(5)
+*** 2.2.2 Ultimate LS                                      :behaviour_factor:
+    1. Energy dissipation
+    2. The balance between the _strength_ and _resiliency_ is characteised by
+       the *behaviour factor* ~q~ . From 1.5~2 for steel/ steel-concrete
+       structure.
+    3. Check sliding and overturning for the building *as a whole*.
+    4. Soil and foundation
+    5. second-Order effect
+    6. Non-structural elemtent <Make sure safe>
+*** 2.2.3 Damage LS
+    1. There's  a Deformation limit
+    2. Special structure
+*** 2.2.4 Specific measures
+**** 2.2.4.1 Design
+     1. Regular please.
+     2. Brittle Failure: Nope. Resistance hierarchy -> plastic mech
+     3. Critical Region X3; Connection X3
+     4. Modeling, 有余力，则考虑Soil, Adjacent building...
+**** 2.2.4.2 Foundation
+     1. Uniform Force Transmission AMAP
+**** 2.2.4.3 Quality system plan
+     1. design doc should include material detail, [characteristics of special
+        devices]
+     2. Special element, Specially checked.
+     3. Earthquaky region?
+** 3.1 Ground Condition 
+*** 3.1.1 General
+    1. Ground Investigate as per 3.1.2
+    2. See 4.2 for *classification* and *guidance*
+    3. Try avoid bad ground: ground rupture, permanent settlement,
+       liquefaction, densification when earthquacked.
+    4. Special structure <- special investigation>
+*** 3.1.2 Ground types                       :ground_types:response_spectras:
+**** (1) The 5 ground types: A,B,C,D,E-> account for the influence of local ground
+       conditions on the seismic action. An alternative way to determine this is
+       to use the *deep-geometry-influence* (DGI) methods, which determines
+       + S, T_B, T_C, T_D :: Describes the _hirozontal and vertical response spectra_
+       + Ground Type Table :: pdf p36
+#+begin_src javascript
+  [
+      {
+          "Ground_Type" : "A",
+          "Description" : "Rock or other rock-lick geological formation,...",
+          "v_s_30" : [800,0xffffff],
+          "N_SPT_below_30cm" : null,
+          "c_u_kpa" : null
+
+      }
+      ,
+      {
+          "Ground_Type" : "B",
+          "Description" : "Deposits of very dense sands, gravels, or...",
+          "v_s_30" : [360,800],
+          "N_SPT_below_30cm" : [50,0xffffff],
+          "c_u_kpa" : [250, 0xffffff]
+
+      }
+  ]
+#+end_src
+**** (2) v_s_30 %PRIO>THAN% N_spt
+      #+begin_src c
+        if (site.v_s_30 != NULL){
+          site.ClassifyFrom_v_s_30();
+         }else{
+          site.ClassifyFrom_N_spt();
+         }
+      #+end_src
+**** (3) Compute the v_s_30 from the soil profile table
+
+Each row is a layer existing on the top 30m.
+
+Where
++ v : shear wave velocity (at a shear strain level of 1e-5 or less)
++ h : the thickness [m]
+
+#+NAME: soil_profile
+|  h | v |
+|----+---|
+| 10 | 1 |
+| 20 | 2 |
+| 30 | 3 |
+
+#+BEGIN_SRC emacs-lisp :var p=soil_profile :results both
+  (defun sum (l)
+    "sum a list"
+    (setq r 0)
+    (mapcar (lambda (x) (setq r (+ x r)))
+            l
+            )
+    r
+    )
+
+  (defun div (c)
+    "divide the cons cell.
+    (a b) -> a/b"
+    (/ (float (first c))
+       (float (second c))
+       )
+    )
+
+  (setq h_v (mapcar #'div d))
+  (setq S (sum h_v))
+  (/ 30 S)
+#+END_SRC
+
+#+RESULTS:
+: 150.0
+**** (4) The two special profiles
+If the ground  has v_s_30 less than 100 (or equivalent). Then they are *special*
+(i.e. too weak).
+
+They should be taken care of.
+** 3.2 Seismic action
+*** 3.2.1 Seismic zones
+**** (1) constant harzard
+Countries should be devided into seismic zones. Each zone has _constant
+harzard_.
+**** (2) how "harzard" is measured(RPGA-A)? 
+     Described by the *referance peak ground acceleration on type A ground* .
+$a_g_R$.
+# May be found in the "zonation(zone) maps" from NA.
+**** (3) relation to T_NCR , P_NCR and importance factor 
+1. The design ground acceleration ~a_g~ is ~a_g_R * ga_1(importance factor)~.
+2. RPGA-A corresponds to the 
+   + ~T_NCR~ (referance return period for _no collapse requirement_)
+   + or ~P_NCR~ (equivalent of probability of exceedance in 50 yrs)
+**** (4) un-earth-quaky
+If the _design ground acceleration on type A ground_ ~a_g~ < 0.08g (0.78m/s2)
+*OR* ~a_g * S~ < 0.1g (0.98m/s2) [find in NA].
+    You can use special methods found in NA
+**** (5) Very un- earth-quaky
+If ~a_g~ < 0.04g (0.39m/s2) *OR* ~a_g * S~ < 0.05g (0.49 m/s2)
+    You don't need EC8.
+*** 3.2.2 Basic representation of the seismic action
+**** 3.2.2.1 General
+***** (1) elastic response spectrum (ERS)
+The earthquack motion at a given point on the surface is represented by an
+*elastic ground acceleration response spectrum* called (ERS).
+***** (2) same shapes for both levels 
+Both 
+1. no-collapse
+2. no-damage
+have the same shapes for ERS.
+***** (3) 2D condireration 
+Two orthogonal components are *independent* and got the same ERS. 
+***** (4) 3D
+One or more shapes of spectrums might be used.
+***** (5) Multi-sources earthquack
+Multi-sources <-> Multi-spectrum <-> different ~a_g~ for each
+***** (6) Important structures (gamma > 1)
+*Topographic amplification effects* should be considered. => Informative Annex A.
+***** (7) History representation OK
+      See 3.2.3
+***** (8) Special structure can have variant ground movement
+See 1998-[2,4,6]
+**** 3.2.2.2 Horizontal elastic response spectrum
+***** (1) calculate the acceleration
+****** => *elastic acceleration response spectrum* ~S_e(T)~ [ms^-2]
+
+| Name | Description                           |
+|------+---------------------------------------|
+| S(T) | the elastic response spectrum (ms^-2) |
+| T    | the vibration period                  |
+# of a linear single-degree-of-freedom system
+| a_g | the design ground acceleration on Type A ground = ga_I(imp factor) * a_g_R |
+
+
+Let 🐸 := *The period of the constant spectual acceleration branch*
+Let ❄  := *The constant displacement response range of the spectrum*
+| Threshold | Description           |
+|-----------+-----------------------|
+| T_B       | the lower limit of 🐸 |
+| T_C       | the upper limit of 🐸 |
+| T_D       | the begining of ❄     |
+
+
+| Soil vars | Description                                           |
+|-----------+-------------------------------------------------------|
+| S         | soil factor                                           |
+| eta       | damping correction factor (=1 for 5% viscous damping) |
+
+#+BEGIN_SRC emacs-lisp
+  (defun spec (T T_B T_C T_D eta S a_g &optional is_vertical)
+    ;; The only difference between vertical and horizontal equation is that: the
+    ;; horizontal profile uses a factor of 2.5, while the vertical profile uses a
+    ;; factor of 3.
+
+  (setq fac (if is_vertical 3 2.5))
+    (defun main ()
+      (cond ((between T 0 T_B) (f1 T))
+            ((between T T_B T_C) (f2))        ;constant
+            ((between T T_C T_D) (f3 T))
+            ((between T T_D (* 4 S)) (f4 T))
+            (t (error "T larger than 4*S 🤔"))
+            )
+      )
+
+    (defun between ( x a b)
+      (and (<= a x) (<= x b))
+      )
+
+    (defun f1 (T)
+      (message "f1 called")
+      (defun f11 (T)
+        (setq A (- (* eta 2.5) 1))
+        (+ 1 (* (/ T T_B) A))
+        )
+      (* a_g S (f11 T))
+      )
+
+    (defun f2 ()
+      (message "f2 called")
+      (* a_g S eta  2.5))
+
+    (defun f3 (T)
+      (message "f3 called")
+      (* (f2) (/ T_C T))
+      )
+
+    (defun f4 (T)
+      (message "f4 called")
+      (defun f41 (T)
+        (/ (* T_C T_D) (* T T))
+        )
+      (* (f2) (f41 T))
+      )
+
+    (main)
+    )
+
+  (defun test ()
+    (defun expect-equal (a b s)
+      (if (equal a b)
+          (message "%s tested: OK" s)
+        (message "%s tested: Not OK, (equal %s %s) is not ture" s a b)
+        )
+      )
+
+    (expect-equal
+     (seq-let [T T_B T_C T_D eta S a_g] [5.0 10.0 20.0 30.0 (/ 9.0 2.5) 100 2]
+       (spec T T_B T_C T_D (eval eta) S a_g)
+       )
+     1000.0
+     "f1"
+     )
+
+    ;; Test f2: should be 1800
+    (expect-equal
+     (seq-let [T T_B T_C T_D eta S a_g] [15.0 10.0 20.0 30.0 (/ 9.0 2.5) 100 2]
+       (spec T T_B T_C T_D (eval eta) S a_g)
+       )                                     ;1800.0
+     1800.0
+     "f2"
+     )
+
+    ;; Test f3: should be 900
+    (expect-equal
+     (seq-let [T T_B T_C T_D eta S a_g] [40.0 10.0 20.0 50.0 (/ 9.0 2.5) 100 2]
+       (spec T T_B T_C T_D (eval eta) S a_g)
+       )                                     ;900.0
+     900.0
+     "f3"
+     )
+
+    ;; Test f4: should be 500
+    (expect-equal
+     (seq-let [T T_B T_C T_D eta S a_g] [60.0 10.0 20.0 50.0 (/ 9.0 2.5) 100 2]
+       (spec T T_B T_C T_D (eval eta) S a_g)
+       )                                     ;500.0
+     500.0
+     "f4"
+     )
+    )
+
+  (test)
+#+END_SRC
+***** (2) where to get ~T_B,T_C,T_D~ and ~S~
+They come from
+1. National Annex
+2. The [Table 3.2] for Type1, [Table 3.3] for Type2. {pdf p40}
+****** which type to use? 
+#+BEGIN_SRC c
+  if (deep_geology_not_accounted_for()){
+    Choice = Type1 + Type2;
+   }else if( the_surface_wave_magnitude_M < 5.5){
+    Choice = Type2;
+   }else{
+    Choice = get_from_National_Annex();
+   }
+
+#+END_SRC
+****** damping ratio ɑ?
+密 之 number = 5%
+***** (3) The dumping correction factor(DCF) η <- VDR 
+ξ : the viscous dumping ratio (VDR) of structure expressed in ratio
+#+BEGIN_SRC emacs-lisp
+  (defun get-eta (xi)
+    (max 0.55 (sqrt (/ 10.0 (+ 5.0 xi))))
+    )
+
+  ;; Should be 1.19522
+  (get-eta 2.0)                           ;1.1952286093343936
+  ;; Should be 0.55
+  (get-eta 100)                           ;0.55
+
+#+END_SRC
+***** (4) VDR usually 5%
+***** (5) acceleration => displacement
+      #def\f#1{elastic #1 response spectrum}
+
+You can get \f{displacement} ~S_D_e(T)~ from
+ \f{acceleration} ~S_e(T)~.
+
+#+BEGIN_SRC emacs-lisp
+  (defun get-S_D-from (S_e T)
+    (defun square (x)
+      (* x x)
+      )
+    (setq 2pi (* 2 float-pi))
+    (* S_e (square (/ T 2pi))
+       )
+    )
+
+  ;; Should be 12.665
+  (get-S_D-from 5 10)                     ;12.665147955292223
+#+END_SRC
+***** (6) if T > 4s, eqn in (5) not OK
+If T > 4s, you can get \f{acceleration} from \f{displacement} using the inverse
+of eqn in (5).
+**** 3.2.2.3 Vertical elastic response spectrum
+1. Same equation as the horizontal one, just 
+   - change the factor from 2.5 to 3;
+   - replace ~a_g * S~ with ~a_vg~.
+2. (2) in the last section(3.2.2.2) applies.
+3. Where to get the values? Table 3.4 (pdf p43)
+**** 3.2.2.4 Design ground displacement ~d_g~
+     
+#+NAME: get_d_g
+#+BEGIN_SRC emacs-lisp :var a_g=1 :var S=2 :var T_C=10 :var T_D=4
+(* a_g S T_C T_D 0.025)
+#+END_SRC
+
+Should be 2:
+#+RESULTS: get_d_g
+: 2.0
+**** 3.2.2.5 Design spectrum for the elastic analysis
+***** (1) non-linear strength generally ignored
+***** (2) in order to avoid plastic design, we do linear analysis. :behaviour_factor:
+      The *design spectrum* is reduced to be _elastic_ by introducing ~q~, a
+      behaviour factor.
+***** (3) what is                                          :behaviour_factor:
+      The ratio:
+#+BEGIN_QUOTE
+experience_seismic_force / design_seismic_force
+#+END_QUOTE
+
+Where:
+    + experience_seismic_force :: the force experienced when completely elastic
+         and ~viscous_damping_ratio = 5%~
+    + design_seismic_force :: ...
+
+***** (4) the design spectrum
+
+The design spectrum is similar to the specific spectrum with the following
+differences:
+1. There are changes in [f1,f2,f3,f4]
+2. There's no _upper limit_ for T
+#+BEGIN_SRC emacs-lisp
+  ;;{{{ design-spec
+
+  (defun design-spec (T T_B T_C T_D q S a_g)
+
+  (setq eta (/ 1 q))
+    (defun main ()
+      (cond ((between T 0 T_B) (f1 T))
+            ((between T T_B T_C) (f2))        ;constant
+            ((between T T_C T_D) (f3 T))
+            ((< T 0) (error "T should be positive"))
+            (t (f4 T))
+            )
+      )
+
+    (defun between ( x a b)
+      (and (<= a x) (<= x b))
+      )
+
+    (defun f1 (T)
+      (message "f1 called")
+      (defun f11 (T)
+        (setq a (/ 2.0 3.0))
+        (setq A (- (* 2.5 eta) a))
+        (+ a (* (/ T T_B) A))
+        )
+      (* a_g S (f11 T))
+      )
+
+    (defun f2 ()
+      (message "f2 called")
+      (* a_g S eta 2.5))
+
+    (defun f3 (T)
+      (message "f3 called")
+      (* (f2) (/ T_C T))
+      )
+
+    (defun f4 (T)
+      (message "f4 called")
+      (* (f3 T) (/ T_D T))
+      )
+
+    (main)
+    )
+
+  ;;}}}
+  ;;{{{ near(a b)
+
+  (defun near (a b &optional prec)
+    "float point comparison"
+    (message "near called")
+    (unless prec (setq prec 1e-3))
+    (message "a - b is %g" (- a b))
+    (message "abs is %g" (abs (- a b)))
+    (message "precision is %g" prec)
+    (< (abs (- a b)) prec)
+    )
+
+  ;; test_near
+  ;; (equal (/ 500.0 3.0) (* (/ 500.0 9.0) 3.0))             ;nil
+  ;; (near (/ 500.0 3.0) (* (/ 500.0 9.0) 3.0))             ;t
+
+  ;;}}}
+  ;;{{{ test()
+
+  (defun test ()
+    (defun expect-equal (a b s &optional f)
+      ;; f is a bool <- (x,y)
+      ;; fset is to set the function cell [ call with (f 1 1)]
+      ;; setq is to set the value cell [call with (funcall f 1 1)]
+      (unless f (setq f #'equal)
+              (message "equal is used"))
+      (if (funcall f a b)
+          (message "%s tested: OK" s)
+        (message "%s tested: Not OK, (equal %s %s) is not ture" s a b)
+        )
+      )
+
+    (expect-equal
+     (seq-let [T T_B T_C T_D q S a_g] [5.0 10.0 20.0 30.0 2.5 100 2]
+       (design-spec T T_B T_C T_D (eval q) S a_g)
+       )
+     (/ 500.0 3.0)
+     "f1"
+     )
+
+    ;; Test f2: should be 1800
+    (expect-equal
+     (seq-let [T T_B T_C T_D q S a_g] [15.0 10.0 20.0 30.0 2.5 100 2]
+       (design-spec T T_B T_C T_D (eval q) S a_g)
+       )                                     ;1800.0
+     200.0
+     "f2"
+     )
+
+    ;; Test f3: should be 900
+    (expect-equal
+     (seq-let [T T_B T_C T_D q S a_g] [40.0 10.0 20.0 50.0 2.5 100 2]
+       (design-spec T T_B T_C T_D (eval q) S a_g)
+       )                                     ;900.0
+     100.0
+     "f3"
+     )
+
+    ;; Test f4: should be 500
+    (expect-equal
+     (seq-let [T T_B T_C T_D q S a_g] [60.0 10.0 20.0 50.0 2.5 100 2]
+       (design-spec T T_B T_C T_D (eval q) S a_g)
+       )                                     ;500.0
+     (/ 500.0 9.0)
+     "f4"
+     (symbol-function 'near)
+     )
+    )
+
+  ;;}}}
+
+  (test)
+#+END_SRC
+
+***** (5) the design spectrum [vertical]
+Same formula as in (4). But use ~a_g_v~ instead of ~a_g~. Take S <- 1; Others
+according to 3.2.2.3
+***** (6)&(7) for the vertical spectrum                   :behaviour_factor:
+q <- upto to 1.5 for all.
+If you use q > 1.5: Justify.
+***** (8) For base-isolation and energy dissipation system 
+      The above design is not enough.
+*** 3.2.3 Alternative representations of seismic actions
+**** Time - history representation
+***** 3.2.3.1.1 General
+****** (1) The seismic motion may also be respresented in terms of
+1. ground acceleration time-history
+2. velocity and displacement
+3. etc
+****** (2) 3d -> 3                                            :accelerograms:
+       You need 3 *accelerograms* in each axis.
+****** (3) There're two types of                 :accelerograms:
+       1. Artificial
+       2. Simulated
+***** 3.2.3.1.2 Artificial                                    :accelerograms:
+****** (1) What kind of accelerograms are OK?
+       That matches the *elastic response spectrum* in 3.2.2.2 for damping ξ=
+       5%.
+****** (2) The duration of accelerograms shall be consistant with
+1. the magnitude
+2. the other relevent features of seismic event
+
+implided by ~a_g~
+****** (3) Default T_s >  10s
+       When site-data not availble: T_s (the duration of the stationary part)
+       Should be > 10s.[i.e. Peak should be board enough.]
+****** (4) the 3 rules 
+       ...
+***** 3.2.3.1.3 Recorded                                      :accelerograms:
+...
+*** 3.2.4 Combination of the seismic actions with other actions
+**** (1) The design value E_c -> EN:1990:2002 ::6.4.3.4  
+**** (2) The inertial effecrs                              :combination_coef:
+     Should consider the dead load.
+Σ G_zj "+" Σ ψ_bi + Q_k
+**** (3) What does it mean by                              :combination_coef:
+     Accounts for 
+1. the *likelihood* of Q_k not being present over the structure during earthquake.
+2. how "irrelavent" the mass is during the earthquake
+**** (4) Find em in 1998 and 2002                          :combination_coef:
+** 4.1 General
+*** 4.1.1 Scope
+| Section | Description                              |
+|---------+------------------------------------------|
+|       4 | general                                  |
+|     5-9 | rules for various materials and elements |
+|      10 | base-isolated building                   |
+** 4.2 Characteristics of earthquake resistant buildings
+*** 4.2.1 Basic principles of conceptual design
+**** (1) Do it early
+**** (2) The 6 guiding principles
+1. structual simplicity
+2. uniformity, symmetry and redundency
+3. bi-directional  resistance and stiffness
+4. tortional resistance and stiffness
+5. diaphragmatic behaviour at storey level
+6. adequate foundation
+**** 4.2.1.1 Structual simplicity
+Clear and direct paths for the transmission of the seismic forces.
+**** 4.2.1.2 Uniformity, symmetry and refundancy
+1. even-distribution of structual element -> short + direct transmission of the
+   inertia forces.
+2. uniform along the height of structure.(不要是个蘑菇)
+3. 
+...
+*** 4.2.2 Primary and secondary seismic members
+*** 4.2.2 Primary and secondary seismic members
+**** (1) Some ignorable beams and cols
+ Some column and beams can be considered as "secondary elements", whose
+ earthquake resistance is ignored. However, their connections should be
+ well-designed.
+**** (2) EC 2 3 4 5 6 and this all take care of secondary element.
+**** (3) !secondary == primary
+**** (4) Σ secondary-resistance <= 15% primary resistance.
+**** (5) Don't make a structure regular by changing a member to secondary.
+*** 4.2.3 Criteria for structual regularity
+**** 4.2.3.1 General
+***** (1) Builds can be ( | non-)regular
+ Note: For a multi-parts building: judge for each part.
+***** (2) Suppose it's regular, so what                    :behaviour_factor:
+ We can
+     1. Use a simplified planar model instead of a spatial model.
+     2. Use a simplified *response spectrum analysis* or a modal one.
+     3. Have a higher *behaviour factor* ~q~. (~q~ reduced for non-regular building) 
+***** (3) If you got elevation regular and plan irregular (or something else), what do you do?
+     
+ | Plan regular | Elevavtion regular | Model   | Linear-elastic Analysis | Behaviour factor |
+ |--------------+--------------------+---------+-------------------------+------------------|
+ | Yes          | Yes                | Planar  | Lateral force           | Reference value  |
+ | Yes          | No                 | Planar  | Modal                   | Decreased value  |
+ | No           | Yes                | Spatial | Lateral force           | Reference value  |
+ | No           | No                 | Spatial | Modal                   | Decreased value  |
+
+ Table 4.1
+***** (4) How to judge regularity in plan and in elevation ?
+ 4.3.3.2
+ 4.2.3.3
+***** (5) The methods listed in (4) are necessary conditions, but not sufficient .
+***** (6) Where are the reference values of                :behaviour_factor:
+ Section 5~9
+***** (7) Decreased value if elevation is non-regular
+ If the building's elevation is non-regular. The decreased value is 0.8 *
+ reference value
+**** 4.2.3.2 Criteria for regularity in plan [Cube is regular]
+***** (1) Satisfy the following:
+***** (2) Approximately symmetrical in two axes
+ The building should be approximately symmetrical with respect to the *lateral
+ stiffness* and *mass distribution* , in two orthogonal axes.
+***** ...
+**** 4.2.3.3 Criteria for regularity in elevation [Cube is regular]
+*** 4.2.4 Combination coefficients for variable actions
+**** (1) The ѱ₂ᵢ (for the quasi-permanent value of variable q_i)
+     2002: Annex A1
+**** (2) The combination coefficients ψₑᵢ
+ ψₑᵢ = ɸ * ѱ₂ᵢ
+ Where ɸ is in NA or Table 4.2
+*** 4.2.4 Importance classes and importance factors
+**** (1) There are 4 classes
+**** (4) The table
+ | Importance class | Buildings       | factors |
+ |------------------+-----------------+---------|
+ |                1 | unimportant     |     0.8 |
+ |                2 | normal          |       1 |
+ |                3 | kinda important |     1.2 |
+ |                4 | Important       | 1.4     |
+**** (6) dangerous installations/materials
+ EN 1998-4
+** 4.3 Structual analysis
+*** 4.3.1 Modelling
+The model should 
+**** (1) Represent the (distribution of stiffness/mass), deformation shapes, interia forces.
+**** (2) Consider the joint regions (e.g. end-zones in beams and columns)
+**** (3) usually be considered to consists of
+a number of
+    1. vertical
+    2. lateral
+load resisting systems, connected by *horizontal diaphragms*.
+**** (4) when you can assume that the floor diaphragms be rigid?
+If the actual displacement is within 10% of the displacement achieved by an rigid
+floor.
+**** (5) When can you use 2 planar models ?
+1. If it's *regular* in plan (4.2.3.2)
+2. See 4.3.3.1
+**** (6,7) How cracking should be considered for stiffness.
+     For concrete, masonry, RC-building:
+
+     1. Such stiffness should correspond to the initiation of yielding of the
+        reinforcement.
+     2. Concrete | stone stiffness 减半 
+**** [#C] (8) ..Infill wall
+4.3.6
+**** [#C] (9) The deformability of foundation
+**** (10) The gravity masses is from ψ_E_i(from 4.2.4)
+*** [#A] 4.3.2 Accidental tortional effects
+Each floor ~i~ should be considered as being displaced from its nominal location
+in each direction by an *accidental eccentricity*
+
+#+NAME: get_accidental_eccentricity 
+#+BEGIN_SRC emacs-lisp
+(setq e_ai (* 0.05 L_i))
+(format "The accidental eccentricity is %.2f m" e_ai )
+#+END_SRC
+
+If on this floor, the _floor-dimension perpendicular to the direction of the
+seismic action_ ~L_i~ is 10 m
+#+call: get_accidental_eccentricity(L_i=10)
+
+#+RESULTS:
+: The accidental eccentricity is 0.50 m
+*** 4.3.3 Methods of analysis
+**** 4.3.3.1 General
+***** (1) Within the scope of Section 4. Structre has *linear-elastic* behaviour
+***** (2) The *reference method*
+= modal response spectrum analysis.
+***** [#A] (3) Two type of linear-elastic analysis
+1. lateral force method of analysis (4.3.3.2)
+2. modal response spectrum analysis (4.3.3.3)
+***** [#C] (4,5,6) Alternative non-linear methods
+***** [#C] (6) Non-base-isolated structures if non-linear
+If designed on the basis of *non-linear pushover analysis*...
+See 4.4.2.2
+***** (7) If regular: Use two planar models
+***** (8,9) For non-regular but "un-important" structures
+If 
+    1. height < 10m
+    2. ...
+Then you can also use two planar models.
+***** (10,11) Otherwise: Use spatial models 😭
+**** 4.3.3.2 Lateral force method of analysis
+***** 4.3.3.2.1 General
+****** (1) This type OK if                  :fundamental_period_of_vibration:
+The building's response is not significantly affected by contributions from
+
+modes of vibration
+
+higher than 
+
+the fundamental mode in each principal direction.
+
+In other words:
+
+if
+    1. T_1 <= min(4 * T_C , 2.0 sec)
+    2. The building's regular in elevation. (4.2.3.3)
+
+Where
+    + T_1 :: the foundamental period of vibration(sec)
+    + T_C :: in 3.2.2.2
+***** 4.3.3.2.2 Base shear force ~F_b~
+****** [#A] (1) The expression              :fundamental_period_of_vibration:
+
+F_b = S_(T_1) * m * λ
+
+| var      | description                                                                                    |
+|----------+------------------------------------------------------------------------------------------------|
+| S_d(T_1) | the ordinate of the design spectrum (3.2.2.5 [[*3.2.2.5 Design spectrum for the elastic analysis][go]])                                               |
+| T_1      | the fundamental_period_of_vibration of building for lateral motion in the direction considered |
+| m        | the mass of the building above (foundation, rigid basement 3.2.4 (c) [[* (2) The inertial effecrs][go]])                       |
+| λ       | the correction factor                                                                          |
+******* The correction factor λ
+        
+#+name: get_correction_factor 
+#+BEGIN_SRC emacs-lisp
+  (if (< T_1 (* 2 T_C))
+      0.85
+    1.0
+      )
+#+END_SRC
+
+C-c C-c HERE. Should get 0.85.
+#+call: get_correction_factor(T_1=2, T_C=3)
+
+#+RESULTS:
+: 0.85
+****** [#A] (2,3,4,5) How to get T_1        :fundamental_period_of_vibration:
+#+NAME: get_T_1
+#+BEGIN_SRC emacs-lisp
+  (setq moment-resistant-space-steel-frame (> steel 0)
+        moment-resistant-space-concrete-frame (> conc 0)
+        has-shear-wall (> shear 0)
+        top-displacement (> top 0)
+        )
+
+  (setq C_t
+        (cond (moment-resistant-space-steel-frame 0.085)
+              (moment-resistant-space-concrete-frame 0.075)
+              (t 0.05)
+              )
+        )
+
+
+  (defun expr1 (h C_t)
+    (setq h2 (expt h (/ 3.0 4.0)))
+    (message "h is %g, C_t is %g, h2 is %g" h C_t h2)
+    (* C_t h2)
+    )
+
+  (defun Rayleigh-methods-from-structual-dynamics ()
+    (message "I don't understand this method yet.")
+    )
+
+  (cond (has-shear-wall (message "Use formula in (4)"))
+        (top-displacement (message "Use formula in (5)"))
+        ((< height 40) (expr1 height C_t))
+        (t Rayleigh-methods-from-structual-dynamics)
+        )
+
+#+END_SRC
+
+#+call: get_T_1(height=16.0, steel=0,conc=0,shear=0,top=0)
+
+#+RESULTS:
+: 0.4
+***** 4.3.3.2.3 Distribution of the horizontal seismic forces
+****** (1) the                                       :fundamental_mode_shape:
+You can either
+    1. Do structual dynamics. Or
+    2. approximate that *horizontal displacements increasing linearly along the
+       height of the building*
+****** (2,3) How the seismic action effects is applied to each storey?
+       If we choose to use the second option in (1) (of course, we do.), then
+
+F_i = F_b * (z_i  * m_i ) / (Σ z_j * m_j)
+
+Where 
+| var     | description                                                          |
+|---------+----------------------------------------------------------------------|
+| F_i     | the horizontal force acting on the storey i                          |
+| F_b     | the seismic base shear                                               |
+| z_i,z_j | the height of mass ~m_i, m_j~ in the ~fundamental_mode_shape~ |
+| m_i,m_j | the storey masses                                                    |
+****** (4) How should F_i be distributed?
+They shall be distributed to the _lateral load resisting system_, assuming the
+floors are *rigid*.
+***** 4.3.3.2.4 Torsional effects
+****** [#A] (1) The simplist way
+#+BEGIN_SRC emacs-lisp
+  (if lateral-stiffness-and-mass-are-sysmmetricaly-distributed
+      (use-a-torsion-factor)
+      )
+#+END_SRC
+
+Multiplying the action effects in the individual load resisting elements
+resulting from the application of 4.3.3.2.4(4) [[* (4) How should F_i be distributed?][go]] by a factor ẟ
+
+δ := 1 + 0.6 * (x / L_e)
+
+Where
+🐸 := measured perpendicularly to the distance of the seismic action considered.
+| var | Description                                                                  |
+|-----+------------------------------------------------------------------------------|
+| x   | distance from  building center-of-mass-in-plan, to the considered element 🐸 |
+| L_e | distance between the 2 outermost lateral load resisting elements 🐸          |
+****** (2) If the analysis is performed using two planar models
+Torsional effects may be determined by 
+
+- *doubling the e_ai in (4.3)* [[*4.3.2 Accidental tortional effects][go]] and
+- Use (1) above, but change 0.6 to 1.2.
+**** [#C] 4.3.3.3 Modal response spectrum analysis
+**** [#C] 4.3.3.4 Non-linear methods
+**** 4.3.3.5 Combination of the effects of the components of the seismic action
+***** 4.3.3.5.1 Horizontal components of the seismic action
+

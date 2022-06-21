@@ -1,0 +1,7 @@
+\def\MyPattern#1{My Random Prefix and #1}
+\def\MySet#1#2{\expandafter\def%
+  \csname\MyPattern{#1}\endcsname%
+  {#2}
+}
+\def\MyGet#1{\csname\MyPattern{#1}\endcsname}
+% \MySet{MEdl}{\textcolor{black}{45780000}}

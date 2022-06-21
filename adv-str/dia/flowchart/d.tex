@@ -1,0 +1,207 @@
+
+\newcommand\uptodown[2][]{\draw(#1.south)..controls + (0,-.5cm) and + (0,.5cm).. (#2.north);}
+\newcommand\righttodown[2][]{\draw(#1.east)..controls + (.5cm,0) and + (0,.5cm).. (#2.north);}
+\newcommand\sdown[2][]{\draw(#1.south)--(#2.north);} %Straight down
+\newcommand\mycol[1]{\ensuremath{ \{ #1_{1}, \ldots , #1_{n} \} }}           %my collection
+\def\myem{\Large \bf}
+
+\begin{tikzpicture}
+  % \draw[style=help lines,step=1cm] (-5,-10) grid (40,10);
+  % the diagram
+
+  % the border
+  \begin{scope}[x=1cm,y=1cm]
+    \draw[thick,dashed] (1.5,-9) rectangle (30,9);
+  \end{scope}
+
+  % Title
+  \node at (2cm,10cm)[right] {%
+    \Huge How to get the stiffness response (the $\kappa - M$ and $B-M$ plots) for a
+    section};
+
+  \begin{scope}[node distance=2cm]
+
+    \tikzstyle{every node}=[draw, rectangle,text centered]
+
+    \node at (0,7cm) (each_sec)[text width=6cm,left]{%
+      For a given section.
+      \begin{itemize}
+      \item rebar
+        \begin{description}
+        \item[area] how big is the rebar
+        \item[location] where is the rebar
+        \item[strength] the strength (from the elastic, perfect-plastic curve) 
+        \end{description}
+      \item FRP
+        \begin{description}
+        \item[strength] the strength
+        \item[thickness] how thick the FRP is
+        \end{description}
+      \item Dimension
+        \begin{description}
+        \item[depth]  $d=450$ mm
+        \item[breath] $b=200$ mm
+        \end{description}
+      \end{itemize}
+    };
+
+    \node (0,0) (pick_ep)[text width=4cm,left] {%
+      Pick a series of $\epsilon$ from 0 - 0.0035, we get:
+      
+      \mycol{\epsilon}
+
+      Then, for each $\epsilon_i$, do the following.
+    };
+
+    \node (ep) [circle,right of=pick_ep,xshift=2.5cm] {$\epsilon$};
+
+    \node at ([yshift=-2.5cm] ep.west) (find_dc) [%
+    right,                                        % anchor=west
+    text width=8cm,
+    text justified,
+    node distance=2.5cm] {%
+      Find $d_c$
+      
+      {\footnotesize
+        \begin{enumerate}
+        \item Assume a $d_c$;
+        \item Calculate the net force $f$ from $d_c$ and $\epsilon$;
+        \item If $f$ is (approximately) zero: done; Else: Assume a new $d_c$ and
+          go to step 2;
+        \end{enumerate}
+      }
+  };
+
+  \node (dc) [circle, below of=find_dc,node distance=3cm] {$d_c$};
+  \node (strn_dist) [ellipse, right of=find_dc, xshift=6cm]{the strain distribution};
+
+
+%Draw lines
+
+  \begin{scope}[thick, ->]
+    \draw (each_sec) -- (pick_ep);
+    \draw (pick_ep) -- (ep);
+    \draw (ep) -- (ep |- find_dc.north);
+    \draw (find_dc.south) -- (dc);
+    \draw (dc.east) .. controls +(4cm,0) and +(0,-1cm).. (strn_dist.south west);
+    \draw (ep.east) .. controls +(8cm,0) and +(0,1cm).. (strn_dist.north west);
+  \end{scope}
+
+  
+  \end{scope}
+
+% The section
+\begin{scope}[x=.1mm,y=.1mm,shift={([xshift=0.4cm, yshift=-5.5cm]strn_dist.south)}]
+  \draw[thick,double] (strn_dist.south) -- ++(0,-600) -- ++(900,0) |- (strn_dist.east);
+  % Draw the section
+  \begin{scope}
+    
+    \draw (0,0) rectangle (200,450);
+    \draw (50,50) circle (25);
+    % Implicitly calculate the point
+    \draw (200-50,50) circle (25);
+    \draw[fill=gray!40] (0,300) rectangle (200,450);
+    \draw[thick, {latex}-] (100,400) .. controls +(50,15) .. 
+    (250,470) node[anchor=south] {{\scriptsize The compression zone}};
+  \end{scope}
+
+  % The strain diagram
+  \begin{scope}[xshift=5cm]
+    \draw (0,0) -- ++(0,450) -- ++(100,0) -- (-200,0);
+    \draw[thick,-{latex}] (0,0) -- (-200,0) node[pos=0.5,anchor=north]{$\epsilon$};
+  \end{scope}
+
+  % The dashed line
+  \draw[dashed,thick] (0,300) -- (500,300);
+  % The d_c line 
+  \draw[{latex'}-{latex'}] (620,300) -- ++(0,150) node[pos=0.5,right,
+  text width=2cm,
+  text justified]{%
+    {\scriptsize Depth of
+
+      Neutral Axis $d_c$}};
+
+  \draw[thick,{latex'}-{latex'}] (500,470) -- ++(100,0) node[pos=0.5,above]{%
+    {$\epsilon_{cm}$}};
+\end{scope}
+
+% The diagram part 2
+\begin{scope}[node distance=2cm]
+  \tikzstyle{every node}=[draw, rectangle,text centered]
+
+
+  % the squares
+  \begin{scope}[text width=4cm]
+    \node[above of=strn_dist,node distance=3cm] (gt_str_dist){%
+
+      Calculate the stress distribution from the sections properties and
+      the strain distribution.
+
+    };
+    \node[above of=gt_str_dist,ellipse] (str_dist){%
+      the $\sigma$ across the section.
+    };
+    \node[above right of=str_dist,node distance=4cm] (gt_M) {%
+      Find $M$
+
+      From the stress distribution
+      Calculate the moment $M$.
+    };
+    \node[above of=gt_M] (gt_k) {%
+       Find $\kappa$
+      $$\kappa = \frac{\epsilon_{cm}}{d_c}$$
+    };
+  \end{scope}
+
+  \node[circle,right of=gt_M,node distance=4cm] (M) {$M$};
+  \node[circle,right of=gt_k,node distance=4cm] (k) {$\kappa$};
+  \node[below right of=M] (gt_B) {%
+    Calculate $ B = \frac{M}{\kappa} $
+  };
+  \node[circle,right of=gt_B,node distance=3cm] (B){$B$};
+  
+
+  % the result node
+  \node[above right of=B,node distance=3cm, text width=3cm] (kmB) {%
+    For each $\epsilon$ we get three numbers:
+    $\{B, M$ and $ \kappa\}$
+  };
+
+  \node[right of=kmB,text width = 5cm, node distance=6cm] (kmB_plots){%
+
+    A series of $epsilon$ give us a series of $B,
+    M$ and $\kappa$. So we got
+    \foreach \x in {M,\kappa,B}{
+
+      \mycol{\x}
+    }
+
+    From these, we can plot $M-\kappa$ and $B-M$.
+  };
+
+  % arrows
+  \begin{scope}[->,thick]
+
+    \draw (strn_dist) -- (gt_str_dist);
+    \draw (gt_str_dist) -- (str_dist);
+    \foreach \x in {M,k}{
+      \draw (str_dist.north) |- (gt_\x.west);
+    }
+
+    \foreach \x in {M,k,B}{
+      \draw (gt_\x) -- (\x);
+      % \draw (\x) .. controls +(1cm,0) and (-1cm,0) .. (kmB);
+      \draw (\x) -- (kmB);
+    }
+
+    \righttodown[k]{gt_B}
+    \righttodown[M]{gt_B}
+
+    \draw (kmB) -- (kmB_plots);
+    \draw (each_sec.east) .. controls +(5cm,0) and +(-1cm,0) .. (gt_str_dist.west);
+  \end{scope}
+
+\end{scope}
+
+
+\end{tikzpicture}

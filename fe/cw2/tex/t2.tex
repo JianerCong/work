@@ -1,0 +1,30 @@
+\def\g#1{\MyGet{t2.#1}}
+The data for Jianer is
+\def\m{\text{m}}
+\begin{align*}
+L = \g{L} \m , b = \g{b} \m , h = \g{h} \m
+\end{align*}
+therefore we have
+\begin{align*}
+I = \frac{bh^3}{12} = \frac{\g{b} \times \g{h}^3}{12} = \g{I} \text{m}^4
+\end{align*}
+from GSA we have
+\begin{align*}
+  E &= \g{E} \text{kNm}^{-2} \\
+  m &= \g{m} \text{kgm}^{-1}
+\end{align*}
+So,
+\begin{align*}
+  f_n &= \frac{3.52}{2\pi}\sqrt{\frac{EI}{mL^4}} \\
+  &= \g{f1} \times \sqrt{\g{f2}} = \g{fn}
+\end{align*}
+
+The comparison with the result from GSA is presented below
+\input{data/t2-table}
+As shown, as the number of element increases, the values given by assuming
+mass lumped at nodes are getting closer and closer to the hand calculation value.
+
+Also, the values for distributed mass are all close to the hand calculation
+value, even there seems to be a small divergence as the number of elements
+increases.
+

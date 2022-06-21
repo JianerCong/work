@@ -1,0 +1,17 @@
+name:
+  first: "Jianer"
+  last: "Cong"
+dateOfBirth: "2000-02-11"
+study:
+  uni: "University College London"
+  programme: "MEng Engineering (Civil)"
+  intended qualification: "Master of Engineering"
+  start year: "2018/19"
+  expected end year: "2021/22"
+stokes:
+- "Excel"
+- "python"
+- "C#"
+- "Linux"
+- "Engineering Mathmatics"
+- "Data Analysis"

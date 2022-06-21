@@ -1,0 +1,22 @@
+#+STARTUP: overview
+* Selected Modules
+** CEGE0032 	Introduction to Seismic Design of Structures 	15
+*** TODO Design report	60 %
+*** TODO Group presentation 40 %
+** CEGE0038 	Finite-Element Modelling and Numerical Methods 	15
+** CEGE0040 	Structural Dynamics (100% Exam)
+** CEGE0046 	Advanced Structural Analysis 	15
+Unseen written examination 	70 %
+*** TODO Design project(Nov/30) 	30 %
+Reading 1.3
+** CEGE0048 	Integrated Design 	60 
+Thursday (07/10)
+In person sessions
+Workshop A: 9am-1pm, IOE-Bedford Way (20) C3.12 (我在group B)
+
+You will go through all the project briefs to run a problem formulation and get
+more familiar with their specific challenges. This will help you identify the
+most exciting projects your team wishes to work on through the year.
+
+
+   

@@ -1,0 +1,243 @@
+
+
+\begin{tikzpicture}[x=1cm,y=1cm]
+  % \draw[style=help lines,step=1cm] (-20cm,-90cm) grid (50cm,15cm);
+  \tikzstyle{my_larger}=[text width=1.0cm]
+
+  \begin{scope}[node distance=2cm,every text node part/.style={align=center}]
+    \tikzstyle{every node}=[draw,text width=2.5cm]
+    \tikzstyle{every child}=[level distance = 3cm]
+    \tikzstyle{edge from parent}=[<-,thick,draw]
+    \tikzstyle{level 1}=[ellipse, sibling distance=13cm]
+    \tikzstyle{level 2}=[rectangle, sibling distance=13cm]
+    \tikzstyle{level 3}=[ellipse,sibling distance=6cm]
+    \tikzstyle{level 4}=[rectangle]
+    \tikzstyle{level 5}=[ellipse]
+
+    % Part 1
+    \begin{scope}[text width=2cm]
+      \node (spec_a) {Spectual Acceleration $S_d(T_i)$};
+      \node (spec_d)[above left of=spec_a,node distance=4cm] {Design Response Spectrum $S_d$};
+      \node (T_1)[above right of=spec_a, node distance=4cm] {Fundamental Period of Vibration $T_1$};
+      \node (gt_T_1) [above of=T_1,text width=6cm,node distance=5cm,rectangle] {%
+        \begin{minipage}[r]{1.0\linewidth}
+          {Get $T_1$ \S EC-8 4.3.3.2.2(3)}
+          \[T_1 = C_t H^{\frac{3}{4}}\]
+          Where \textbf{for moment resistant space concrete frames} shorter than 40m :
+          \[C_t = 0.075 \]
+          and $H$ is the building height.
+        \end{minipage}
+      };
+
+      
+      \begin{scope}[thick, ->]
+
+        % Define a new coordinates
+        \coordinate (n1) at ([yshift=.5cm] spec_a.north);
+        \uptodown[spec_d]{spec_a}
+        \uptodown[T_1]{spec_a}
+        \draw (gt_T_1.south) -- (T_1.north);
+      \end{scope}
+    \end{scope}
+    
+    % Part 2   
+    \begin{scope}[node distance=4cm]
+      \node (m)[right of=spec_a,node distance=23cm] {Seismic Mass $m$};
+      \node (gt_m)[above of=m,rectangle,text width=10cm, text ragged] {%
+        \begin{minipage}[r]{1.0\linewidth}
+          {Calc Seismic mass}
+          \\[-.7cm]
+          \begin{align*}
+            m &= G + [ \psi_{Ei, 1}, \psi_{Ei, 2}, \psi_{Ei, 3}, \psi_{Ei, 4} ]
+                \begin{bmatrix}
+                  Q_1 \\
+                  Q_2 \\
+                  Q_3 \\
+                  Q_4 
+                \end{bmatrix}
+            \\
+            \\[-1cm]               %remove the extra spacing
+            \intertext{Where}
+            \\[-1cm]               %remove the extra spacing
+            \psi_{Ei,i} &= \mbox{The reduction factor for the $i^{th}$ floor}\\
+                          &= \phi_i \times \psi_2\\
+            G &= \mbox{The dead load} \\
+            Q_i &= \mbox{The live load of the $i^{th}$ floor} \\
+            \phi_i &= \mbox{The $\phi$ for the $i^{th}$ floor} \\
+            \\[-1cm]               %remove the extra spacing
+          \end{align*}
+        \end{minipage}
+      };
+
+      \node (phi2)[above left of=gt_m,
+      node distance=7cm,
+      text width=5cm,
+      yshift=2cm,
+      xshift=-1cm]{%
+        \begin{minipage}[r]{1.0\linewidth}
+          {\myem Get $\psi_2$}
+
+          \S EC-0 Annex A1.2.2 Table A1.1
+          for office $\backslash$ domestic: $\psi_2 = 0.3$ 
+        \end{minipage}
+      };
+      \node (G) [text width = 2cm,left of=phi2, node distance=6cm]{
+        The dead load $G$
+      };
+      \node (Q) [ text width = 2cm,left of=G]{
+        The live load $Q$
+      };
+
+      \node (psi)[right of=phi2, text width=5cm,node distance=9cm]{%
+        \begin{minipage}[r]{1.0\linewidth}
+          {\myem Get $\phi$}
+
+          \S EC8 4.2.4(2) Table 4.2
+          \begin{equation*}
+            \phi  =
+            \begin{cases}
+              1.0 & \mbox{Roof} \\
+              0.8 & \mbox{Similar Storeys} \\
+              0.5 & \mbox{Independent storeys}  \\
+            \end{cases}
+          \end{equation*}
+          \\[-1cm] %remove the extra spacing
+        \end{minipage}
+      };
+
+      \begin{scope}[thick, ->]
+        \uptodown[phi2]{gt_m}
+        \uptodown[psi]{gt_m}
+        \uptodown[G]{gt_m}
+        \uptodown[Q]{gt_m}
+        \sdown[gt_m]{m}
+      \end{scope}
+    \end{scope}
+
+    % Part 3
+    \begin{scope}
+      \node[circle,right of=m,node distance=10cm,my_larger] (la) {$\lambda$};
+      \node[rectangle,above of=la,node distance=4cm] (gt_la) {%
+        The correction factor: \\
+
+        \(
+        \lambda =
+        \begin{cases}
+          0.85 & \mbox{if $T_1 < 2T_C$ and }    \\
+          & \mbox{has more than 2 storeys} \\
+          \\[-0.2cm]
+          1    & \mbox{Else}                    \\
+        \end{cases}
+        \)
+        
+      };
+      \draw[->,thick] (gt_la) -- (la);
+    \end{scope}
+
+    % Part 4
+    \begin{scope}
+      \tikzstyle{my_c} = [rectangle, text width=4cm]
+      \tikzstyle{my_r} = [text width=2cm]
+
+      \matrix[matrix anchor=gt_F_b.north,
+      draw=none,
+      below of=m,
+      column sep=2cm,
+      node distance=3cm,
+      row sep=1cm
+      ]{
+        \node[my_c] (gt_F_b) {%
+          Calc seismic force $F_b$ (a.k.a Base shear)
+          
+          $F_b = S_d(T_1) \times m \times \lambda$
+        }; &[2cm]
+        \node[my_r] (flr_m) {The mass of each floor $\{m_1 \cdots m_n\}$};&
+        \node[my_r] (flr_z) {The level of each floor $\{z_1 \cdots z_n\}$};&
+        \node[my_c,text width=8cm] (ck_high) {
+          \begin{minipage}[r]{1.0\linewidth}
+            Verify the following two the make sure that
+            \emph{higher order effects} can be ignored (\S EC-8 4.3.3.2.1):
+            \begin{enumerate}
+            \item $T_2 < 2$s and $T_1 \le 4T_C$
+            \item The building's regular in elevation.(as in \S 4.2.3.3)
+            \end{enumerate}
+            Where $T_C$ is one of the parameters of the \emph{elastic response
+              spectrum }and can be found in \S EC-8 3.2.2.2, and $T_1$ is the
+            \emph{fundamental period of vibration.}
+          \end{minipage}
+        };\\
+        \node[circle,my_larger] (F_b) {$F_b$}; \\ %2 more '&' ignored.
+      };
+      % arrows
+      \begin{scope}
+        \foreach \x in {m,spec_a,la}{%
+          \Uptodown[\x]{gt_F_b}
+        }
+        \uptodown[gt_F_b]{F_b}
+      \end{scope}
+    \end{scope}
+
+    % Part 5
+    \begin{scope}
+      % define the coordinate
+      \path (flr_m) -- (flr_z) coordinate[midway] (my_midway);
+
+      \node[rectangle] at ([yshift=-5cm] my_midway) (gt_flr_f){%
+        \S 4.3.3.2 Calc force for each storey \\
+        The force experience by the $k^{th}$ floor is \\
+        $F_k = \frac{F_b(z_km_k)}{\sum_{j}z_jm_j}$
+      };
+      \node[below of=gt_flr_f] (flr_f) {%
+        Force for each floor
+        $\{F_1 \cdots F_n\}$
+      };
+
+      % arrows
+      \foreach \x in {flr_m,flr_z,F_b,ck_high}{%
+        \Uptodown[\x]{gt_flr_f}
+      }
+      \uptodown[gt_flr_f]{flr_f}
+    \end{scope}
+
+    
+  \end{scope}
+
+
+  \begin{scope}[node distance=2cm,every text node part/.style={align=center},
+    shift={([yshift=5cm,xshift=-2cm] spec_d.north)}]
+    \input{d2}
+  \end{scope}
+
+  \begin{scope}[xshift=10cm,yshift=-25cm]
+    \input{d3}
+  \end{scope}
+
+  \begin{scope}
+
+  \draw[very thick, ->](the_ecc_yes.east) to[out=0] node[above,sloped,draw=none]{
+    How to do it in GSA?} (myframe);
+
+  \draw[very thick, ->](flr_f) to[out=270,in=90] node[above,sloped,draw=none]{
+    They are $E$} (E);
+
+  \Uptodown[G]{gt_combs}
+  \Uptodown[Q]{gt_combs}
+    \Uptodown[gt_T_d]{spec_d}     %connect d and d2
+
+    \newcounter{x}
+    % label the procedures
+    \foreach \x in {gt_T_1,gt_m,gt_la,gt_F_b, gt_flr_f,
+      gt_T_d,gt_T_e,gt_S,gt_q,gt_a_g, run, ck_second_ord, gt_dri, gt_th,
+    ck_th, ck_SLS, gt_ds}{ \stepcounter{x}
+      \node[fill=gray!20,circle] at (\x.south east) {p\thex}; }
+    % label the data
+    \setcounter{x}{0}
+
+    \foreach \x in {spec_d,spec_a,T_1,m,phi2,psi,la,flr_m, flr_z,ck_high,F_b,
+      a_g,v_i_h_i,spec_param,al_u_1,T_e,S,q, G, Q, gsa_result, dri, tot_grav, hi,
+      tot_ses_shr,th, ds}{ \stepcounter{x}
+      \node[fill=gray!80,circle,text=white] at ([shift={(0.2cm,-0.1cm)}] \x.south east)
+      {d\thex}; }
+  \end{scope}
+
+\end{tikzpicture}

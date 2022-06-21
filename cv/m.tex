@@ -1,0 +1,19 @@
+\documentclass[12pt]{article}
+% \usepackage[a3paper,landscape]{geometry}
+\usepackage{tikz}
+\usepackage{tcolorbox}
+
+\tcbuselibrary{listings} % <- replace by \tcbuselibrary{listings}, if minted does not work for you
+\begin{document}
+\begin{tcblisting}{listing side text, title=A bonus art drawn by TikZ}
+  \begin{tikzpicture}[allow upside down]
+    \draw[style=help lines,step=1cm] (-1cm,-1cm) grid (6cm,9cm);
+    \draw (0,0) .. controls +(up:10cm) and +(left:8cm) .. (6,7)
+    \foreach \p/\l in
+    {0/Please,0.1/hire,0.2/me,
+      0.3/Please,0.4/hire,0.5/me,
+      0.6/Please,0.7/hire,0.8/me,0.9/now}{
+      node[sloped, above, pos=\p,font=\scriptsize]{\l}};
+  \end{tikzpicture}
+\end{tcblisting}
+\end{document}

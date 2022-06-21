@@ -1,0 +1,88 @@
+% \begin{tikzpicture}
+  % \draw[style=help lines] (-10cm,-10cm) grid (20cm,15cm);
+    \tikzstyle{every node}=[draw,text width=2.5cm]
+
+    \tikzstyle{every child}=[level distance = 3cm]
+    \tikzstyle{edge from parent}=[<-,thick,draw]
+    \tikzstyle{level 1}=[ellipse, sibling distance=13cm]
+    \tikzstyle{level 2}=[rectangle, sibling distance=13cm]
+    \tikzstyle{level 3}=[ellipse,sibling distance=6cm]
+    \tikzstyle{level 4}=[rectangle]
+    \tikzstyle{level 5}=[ellipse]
+
+    \node (gt_T_d) {Get the Design Response Spectrum} [grow'=up]
+
+    child {node (T_e) {Elastic response Spectrum $T_e$}
+%{{{ gt_T_e
+      child {node (gt_T_e) {
+          \S EC-8 3.2.1 Calc the elastic spectrum
+        }
+        child {node (a_g) {$a_g$ for ULS and DLS}
+          child {node[text width=4cm] (gt_a_g) {%
+              Get $a_g$ \\
+              From the Italian National Institute of Geophysics and Volcanology
+              (INGV)
+            }
+          }
+        }
+%{{{ S and spec_param
+        child {node (S) {Site factor S}
+%{{{ gt_S
+          child { node[ text width=5cm] (gt_S) {%
+              \S EC-8 3.1.2 Decide the ground type using Table 3.1.\\
+              \smallskip
+              The parameter needed is the \emph{average shear wave velocity}\\
+              $V_{s,30} = \frac{30}{\sum_{i=1}^{N}\frac{h_i}{v_i}}$}
+%{{{ v_i_h_i
+            child[level distance=5cm] {node[text width = 5cm] (v_i_h_i) {%
+                From the last page of handout. We are given:
+                $\{v_1, \ldots v_n \}$ and 
+                $\{h_1, \ldots h_n \}$ which
+                are the shear-wave velocities of $N$ formation layers,
+                existing in the top 30 metres.
+              }
+            }
+%}}}
+          }
+%}}}
+        }
+        child {node[text width=3cm] (spec_param) {%
+            Spectrum type = 1 \\
+            Damping factor = 1.0}
+        }
+%}}}
+      }
+%}}}
+    }
+    child {node (q) {behavior factor $q$}
+%{{{ q
+      child[level distance=5cm] {node[text width=5.5cm,
+        % every text node part/.style={align=left}
+        ] (gt_q) {
+          \begin{minipage}{1.0\linewidth}
+            \S EC-8 5.2.2.2 Calc $q$\\
+            \smallskip
+            For RC structures:
+            \[q = q_0 k_w \ge 1.5\] 
+            where
+            \[ q_0 =
+            \begin{cases}
+              3\frac{\alpha_u}{\alpha_1} & \mbox{For DCM} \\
+              4.5\frac{\alpha_u}{\alpha_1} & \mbox{For DCH} \\
+            \end{cases}
+            \]
+            \\
+            and $k_w=1$ for frame structures.
+          \end{minipage}
+          }
+          child[level distance=5cm] {
+            node[text width = 6cm] (al_u_1) {
+              \S EC-8 5.2.2.2 Get the over strength \\
+              $\frac{\alpha_u}{\alpha_1} = 1.3$ \\
+              for \emph{multistorey,multibay frame building.}
+          }
+          }
+        }
+%}}}
+    };
+% \end{tikzpicture}

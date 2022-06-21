@@ -1,0 +1,43 @@
+\def\g#1{\MyGet{t1.#1}}
+The given parameters are:
+\def\m{\text{m}}
+\begin{align*}
+  L &= \g{L} \m\\
+  b &= \g{b} \m\\
+  h &= \g{h} \m\\
+  P &= \g{P} \text{kN}
+\end{align*}
+Therefore for the analytical expression, we have
+\begin{align*}
+  A &= bh = \g{b} \m \times \g{h} \m = \g{A} \m^2\\
+  I &= \frac{bh^3}{12} = \frac{\g{b} \times \g{h}^3}{12} = \g{I} \text{m}^4 \\
+  E &= \g{E} \text{kNm}^{-2}\\
+  G &= \g{G} \text{kNm}^{-2}\\
+  k &= \g{k}
+\end{align*}
+Therefore,
+\begin{align*}
+  V_y &= \frac{PL^3}{3EI} + \frac{PL}{kAG} \\
+      &= \frac{\g{P} \times \g{L}^3}{3 \times \g{E} \times \g{I}} +
+        \frac{\g{P} \times \g{L}}{\g{k} \times \g{A} \times \g{G}} \\
+      &= \g{Vy} \m = \g{Vy.mm} \text{mm}
+\end{align*}
+The comparison of results are shown below:
+\begin{center}
+  \begin{tabular}{ll}
+    Source & Displacement \(v_y\) (mm)\\
+    \hline
+    Hand Calc   & \g{Vy.mm} \\
+    GSA k = 5/6 & 0.6451       \\
+  GSA k = 0   &   0.5928     \\
+  \end{tabular}
+\end{center}
+It is expected that ignoring the shear deformation (the third case) will give a lower
+deformation.
+
+It is also expected that the GSA result
+be close to the hand calculation result when the shear deformation is accounted
+for.
+
+The results from above table agree with these.
+

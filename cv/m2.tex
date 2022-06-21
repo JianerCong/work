@@ -1,0 +1,165 @@
+\documentclass{article}
+\title{CV}
+\usepackage{geometry}\geometry{
+  a4paper,
+  total={190mm,267mm},
+}
+\usepackage{tcolorbox}
+\usepackage{varwidth}
+\usepackage{lipsum}
+
+
+\usepackage{fontspec}
+\setmonofont{Cascadia}[
+Path=/usr/share/fonts/truetype/Cascadia_Code/,
+Scale=0.85,
+Extension = .ttf,
+UprightFont=*Code,              %find CascadiaCode.ttf
+BoldFont=*CodePL,               %find CascadiaCodePL.ttf ...
+ItalicFont=*CodeItalic,
+BoldItalicFont=*CodePLItalic
+]
+
+\tcbuselibrary{raster}
+\tcbuselibrary{skins}
+\tcbuselibrary{minted}
+\tcbuselibrary{breakable}
+\usemintedstyle{monokai}
+
+\newcommand{\coli}{gray!50!black}
+\author{Jianer Cong}
+\date{\today}
+\begin{document}
+% title
+\begin{tcolorbox}[enhanced,spread sidewards,
+  tile,colback=\coli,coltext=white]
+  {
+    \Huge \bfseries
+    Jianer Cong CV
+  }
+\end{tcolorbox}
+
+\vspace{1cm}
+
+\tcbset{enhanced,
+  % frame style={left color=green!75!black,right color=red!10!yellow},
+  frame style image=space2.jpeg,
+  % colbacktitle=gray!20,
+  fonttitle=\bfseries\sffamily\Large,
+  % coltitle=black,
+  drop fuzzy shadow
+}
+
+\begin{tcolorbox}[adjusted title= Basic Info: \texttt{profile.yaml},
+  bicolor,
+  sidebyside,
+  righthand width=6cm,
+  % sharp corners,
+  % boxrule=.4pt,
+  colback=\coli,
+  ]
+% {\Large Jianer Cong CV}
+\inputminted{yaml}{profile.yaml}
+\tcblower{}
+\includegraphics[width=\linewidth]{me.jpeg}%
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=A Self-Intro Program,listing only,
+  % coltext=white,
+  opacityback=0.75]
+\begin{verbatim}
+    Hi there, how should I call you: XXXX
+
+    --------------------------------------------------
+    Hi XXXX, my name is Jianer Cong.
+    Just call me Jianer. I am from China.
+    At the time of this writing, it's 22 May 2022.
+    Today is Sunday. Weekend.
+    Now it's 03:16 PM,so perhaps I should say "Good Afternoon".
+
+    I am 22 years old, to be exact, it's 8136 days (upto today).
+    I am from UCL, short for University College London.
+    It's a  4-year programme.I started it when I was 18.
+    So, approximately  16 % of my life is spent in this place.
+
+    If nothing goes wrong, I should be able to get a master degree this summer.
+         Something that I am comfortable with are:
+        Excel, python, C#, Linux, Engineering Mathmatics, and Data Analysis.
+
+    That's it.
+    This script is run by Python 3.8.10 under system Ubuntu 20.04.4.
+
+    --------------------------------------------------
+
+
+    So yeah. Do you want to give me a chance? [y/n]: n
+    Really ? You wanna say no?[y/n]: y
+    Really Really ? You wanna say no?[y/n]: y
+    Really Really Really ? You wanna say no?[y/n]: n
+
+    So yeah. Do you want to give me a chance? [y/n]: y
+    Thanks boss.
+\end{verbatim}
+\end{tcolorbox}
+
+
+\begin{tcolorbox}[adjusted title= Contact Me,
+  % bicolor,
+  sidebyside,
+  righthand width=6cm,
+  opacityback=0.5
+  ]
+  \begin{tcboxedraster}[raster columns=1]{blankest}
+    \begin{tcolorbox}[beamer,title=Email] \texttt{congjianer@outlook.com} \end{tcolorbox}
+    \begin{tcolorbox}[beamer,title=Phone] \texttt{+44 07387761289} \end{tcolorbox}
+  \end{tcboxedraster}
+  \tcblower{}
+  \includegraphics[width=\linewidth]{pysduck.jpeg}
+\end{tcolorbox}
+
+\renewcommand{\theFancyVerbLine}{
+  \textcolor[rgb]{0.5,0.5,0.5}{
+    \oldstylenums{\arabic{FancyVerbLine}}}
+}
+\begin{tcolorbox}[title=Behind The Scene: source code of the self-intro program: \texttt{m.py}, breakable,
+  colback=\coli,
+  leftrule=7mm,
+  % overlay={\begin{tcbclipinterior}\fill[black!20!white] (frame.south west)
+  %     rectangle ([xshift=5mm]frame.north west);\end{tcbclipinterior}}
+  ]
+  \inputminted[
+  linenos,
+  breaklines
+  ]{python}{m.py}
+\end{tcolorbox}
+
+\begin{tcblisting}{
+    listing side text,
+    bicolor,
+    title=Final Words: A bonus drawing,
+    % listing outside text,
+    % listing engine=minted,
+    minted style=colorful,
+    % colbacklower=white
+  }
+  \begin{tikzpicture}[allow upside down]
+    \draw[style=help lines,step=1cm] (-1cm,-1cm) grid (6cm,9cm);
+    \draw (0,0) .. controls +(up:10cm) and +(left:8cm) .. (6,7)
+    \foreach \p/\l in
+    {0/Please,0.1/hire,0.2/me,
+      0.3/Please,0.4/hire,0.5/me,
+      0.6/Please,0.7/hire,0.8/me,0.9/now}{
+      node[sloped, above, pos=\p,font=\scriptsize]{\l}};
+  \end{tikzpicture}
+\end{tcblisting}
+
+\vspace{1cm}
+\begin{tcolorbox}[enhanced,spread sidewards,
+  tile,colback=\coli,coltext=white]
+  {
+    \Huge \bfseries
+    \hfill That's all. Jianer Cong CV ends here.
+  }
+\end{tcolorbox}
+
+\end{document}

@@ -1,0 +1,477 @@
+** get node name [old]
+   #+begin_src csharp
+using System;
+using ComAuto = Gsa_8_6.ComAuto;
+using GsaEntity = Gsa_8_6.GsaEntity;
+
+namespace lrn
+{
+    static class Program
+    {
+        static void Main(string[] args)
+        {
+            // const string filename = @"C:\Users\congj\work\adv-str\lrn_api\gwb_files\hi.gwb";
+            const string filename = @"C:\Users\congj\work\adv-str\lrn_api\gwb_files\init.gwb";
+            ComAuto gsa = new ComAuto();
+            try {
+                Console.WriteLine("Trying to open {0}", filename);
+                if (gsa.Open(filename) == 0){
+                    Console.WriteLine("OK");
+                }else{
+                    Console.WriteLine("Failed");
+                    Environment.Exit(1);
+                }
+                Console.WriteLine("Name of Node 1: {0}", getNodeName(ref gsa, 1));
+            } finally {
+                gsa.Close();
+                Console.WriteLine("{0}, Closed", filename);
+            }
+        }
+
+        public static string getNodeName(ref ComAuto gsa, int id){
+
+            // Init data
+            int flags,dataref,num1dpos;
+            string axis, case_;
+            flags = 0x20;        // calculates 1D results at interesting points
+            /* number of equidistant internal positions along the 1D element, in
+               addition to the automatic ones specified in flags */
+            num1dpos = 1;
+            axis = "default";
+            case_ = "all";
+            dataref = 1002000+1;
+            int r = gsa.Output_Init(flags,axis,case_,dataref,num1dpos);
+            if (r != 0)
+                throw new Exception("Failed to init Output with state ${r}");
+
+            return gsa.Output_Extract(id,0);
+        }
+        static Object First(this Array a){
+            System.Collections.IEnumerator myEnumerator = a.GetEnumerator();
+            myEnumerator.MoveNext();
+            return myEnumerator.Current;
+        }
+
+        static void PrintValues(Array myArray)
+        {
+            System.Collections.IEnumerator myEnumerator = myArray.GetEnumerator();
+            int i = 0;
+            int cols = myArray.GetLength(myArray.Rank - 1);
+            while (myEnumerator.MoveNext())
+            {
+                if (i < cols)
+                {
+                    i++;
+                }
+                else
+                {
+                    Console.WriteLine();
+                    i = 1;
+                }
+                Console.Write("\t{0}", myEnumerator.Current);
+            }
+            Console.WriteLine();
+        }
+    }
+}
+
+// Old GetEntities
+// Array elems;
+// r = gsa.NodeConnectedEnt(
+//     GsaEntity.ELEMENT,
+//     id,              // which node?
+//     out elems
+// );
+// if (r != 0 ){throw new Exception("Error getting node entity");}
+// if (elems.Length == 0){throw new Exception("Got 0-length node entity");}
+// else{
+//     Console.WriteLine("The elems got: ");
+//     PrintValues(elems);
+//     if (!(elems.First() is int)){
+//         throw new Exception("Can't read int from NodeConnectedEnt");
+//     }else{
+//         int e = (int) elems.First();
+//         return gsa.Output_Extract(id,e);
+//     }
+// }
+   #+end_src
+** get node name
+  #+begin_src csharp
+  using System;
+using ComAuto = Gsa_8_6.ComAuto;
+using GsaEntity = Gsa_8_6.GsaEntity;
+
+namespace lrn
+{
+    static class Program
+    {
+        static void Main(string[] args)
+        {
+            // const string filename = @"C:\Users\congj\work\adv-str\lrn_api\gwb_files\hi.gwb";
+            const string filename = @"C:\Users\congj\work\adv-str\lrn_api\gwb_files\init.gwb";
+            ComAuto gsa = new ComAuto();
+            try {
+                Console.Write("Trying to open {0}", filename);
+                if (gsa.Open(filename) == 0){
+                    Console.WriteLine("OK");
+                }else{
+                    Console.WriteLine("Failed");
+                    Environment.Exit(1);
+                }
+                int id = 1;
+                Console.WriteLine("Name of Node {1}: {0}", getNodeName(ref gsa, id), id);
+            } finally {
+                gsa.Close();
+                Console.WriteLine("{0}, Closed", filename);
+            }
+        }
+
+        public static string getNodeName(ref ComAuto gsa, int id){
+
+            // Init data
+            int flags,dataref,num1dpos;
+            string axis, case_;
+            flags = 0x20;        // calculates 1D results at interesting points
+            /* number of equidistant internal positions along the 1D element, in
+               addition to the automatic ones specified in flags */
+            num1dpos = 1;
+            axis = "default";
+            case_ = "all";
+            dataref = 1002000+1;
+            int r = gsa.Output_Init(flags,axis,case_,dataref,num1dpos);
+            if (r != 0)
+                throw new Exception("Failed to init Output with state ${r}");
+
+            return gsa.Output_Extract(id,0);
+        }
+    }
+}
+
+
+#+end_src
+** read output Myy
+  #+begin_src csharp
+  using System;
+using ComAuto = Gsa_8_6.ComAuto;
+using GsaEntity = Gsa_8_6.GsaEntity;
+
+namespace lrn
+{
+    static class Program
+    {
+        static void Main(string[] args)
+        {
+            const string filename = @"C:\Users\congj\work\adv-str\lrn_api\gwb_files\hi.gwb";
+            // const string filename = @"C:\Users\congj\work\adv-str\lrn_api\gwb_files\init.gwb";
+            ComAuto gsa = new ComAuto();
+            try {
+                Console.Write("Trying to open {0}: ", filename);
+                if (gsa.Open(filename) == 0){
+                    Console.WriteLine("OK");
+                }else{
+                    Console.WriteLine("Failed");
+                    Environment.Exit(1);
+                }
+
+                // the version one
+                double[] s;
+                int id = 1;
+                string unit;
+                getMyy(ref gsa, id, out s, out unit);
+                foreach (double myy in s){
+                    Console.WriteLine("Myy got: {0,10:G4}, {1}", myy, unit);
+                }
+
+                (double pos, double Myy, string unit2) = getMidMyy(ref gsa, id);
+                Console.WriteLine("Get the middle Myy: {0:G3} {2} at position {1}", Myy,pos,unit2);
+
+            } finally {
+                gsa.Close();
+                Console.WriteLine("{0}, Closed", filename);
+            }
+        }
+
+        // {{{ initMyy(ref gsa)
+
+        static int initMyy(ref ComAuto gsa, int id){
+            // Init data
+            int flags,dataref,num1dpos;
+            string axis, case_;
+            flags = 0x20;        // calculates 1D results at interesting points
+            /* number of equidistant internal positions along the 1D element, in
+               addition to the automatic ones specified in flags */
+            num1dpos = 1;
+            axis = "default";
+            case_ = "A1";
+            dataref = 14002000+6;
+            int r = gsa.Output_Init(flags,axis,case_,dataref,num1dpos);
+            if (r != 0)
+                throw new Exception("Failed to init Output with state ${r}");
+#if VERBOSE
+            Console.WriteLine("Data Title {0} [{1}]",gsa.Output_DataTitle(1), gsa.Output_UnitString());
+#endif
+            int npos = gsa.Output_NumElemPos(id);
+#if VERBOSE
+            Console.WriteLine("{0} rows of data extracted", npos);
+#endif
+            return npos;
+        }
+        // }}}
+
+        public static (double pos, double Myy, string unit) getMidMyy(ref ComAuto gsa, int id){
+            int npos = initMyy(ref gsa, id);
+            int i = npos /2;
+            double pos =  gsa.Output_1DElemPos(i);
+#if VERBOSE
+            Console.WriteLine("The middle position is {0} [{1}]", i,pos);
+#endif
+            return ( pos ,gsa.Output_Extract(id,i), gsa.Output_UnitString());
+        }
+
+        public static void getMyy(ref ComAuto gsa, int id, out double[] s, out string unit){
+            int npos = initMyy(ref gsa,id);
+            s = new double[npos];
+            for (int i = 0; i < npos; i++){
+                s[i] = gsa.Output_Extract(id, i);
+            }
+            unit = gsa.Output_UnitString();
+        }
+    }
+}
+
+
+#+end_src
+** set a node
+  #+begin_src csharp
+using System;
+using ComAuto = Gsa_8_6.ComAuto;
+using GsaEntity = Gsa_8_6.GsaEntity;
+using System.IO;
+
+
+namespace lrn
+{
+    static class Program
+    {
+        static void Main(string[] args)
+        {
+            const string init_filename = @"C:\Users\congj\work\adv-str\lrn_api\gwb_files\init.gwb";
+            const string filename = @"C:\Users\congj\work\adv-str\lrn_api\gwb_files\m1.gwb";
+            // Delete if exists
+            if (File.Exists(filename)){
+                File.Delete(filename);
+            }
+            File.Copy(init_filename, filename);
+            ComAuto gsa = new ComAuto();
+            try {
+                Console.WriteLine("Trying to open {0}", filename);
+                if (gsa.Open(filename) == 0){
+                    Console.WriteLine("OK");
+                }else{
+                    Console.WriteLine("Failed");
+                    Environment.Exit(1);
+                }
+                go(ref gsa);
+                gsa.Save();
+            } finally {
+                gsa.Close();
+                Console.WriteLine("{0}, Closed", filename);
+            }
+        }
+
+        static void go(ref ComAuto gsa){
+            Console.WriteLine("Generating node:");
+            int n = gsa.Gen_NodeAt(0,1,0,0.0001);
+            Console.WriteLine("New node: {0} generated", n);
+            double x,y,z;
+            Console.Write("Getting node coordinates: ");
+            if (gsa.NodeCoor(n, out x, out y, out z) == 0){
+                Console.WriteLine("OK");
+                Console.WriteLine("The coordinates are {0}, {1}, {2}",x,y,z);
+            }else{
+                Console.WriteLine("Failed");
+            }
+        }
+    }
+}
+
+#+end_src
+** gen a section
+   #+begin_src csharp
+   using System;
+using ComAuto = Gsa_8_6.ComAuto;
+using GsaEntity = Gsa_8_6.GsaEntity;
+using System.IO;
+
+
+namespace lrn
+{
+    static class Program
+    {
+        static void Main(string[] args)
+        {
+            const string init_filename = @"C:\Users\congj\work\adv-str\lrn_api\gwb_files\init.gwb";
+            const string filename = @"C:\Users\congj\work\adv-str\lrn_api\gwb_files\2.gen_sec.gwb";
+            // Delete if exists
+            if (File.Exists(filename)){
+                File.Delete(filename);
+            }
+            File.Copy(init_filename, filename);
+            ComAuto gsa = new ComAuto();
+            try {
+                Console.WriteLine("Trying to open {0}", filename);
+                if (gsa.Open(filename) == 0){
+                    Console.WriteLine("OK");
+                }else{
+                    Console.WriteLine("Failed");
+                    Environment.Exit(1);
+                }
+                go(ref gsa);
+                gsa.Save();
+            } finally {
+                gsa.Close();
+                Console.WriteLine("{0}, Closed", filename);
+            }
+        }
+
+        static void go(ref ComAuto gsa){
+            Console.WriteLine("Generating sections:");
+            string desc = "STD R 400. 200.";
+            int flags = 0x1 | 0x2;
+            string secDesc = gsa.Gen_SectionMatchDesc(desc, flags);
+            Console.WriteLine("Section String: {0}", secDesc);
+            int id = 1;
+            string name = "my_section", mat = "CONC_SHORT";
+            string cmd = string.Format("SEC\t{0}\t{1}\t{2}\t{3}",
+                                       id, name,mat,secDesc);
+            var x = gsa.GwaCommand(cmd);
+            if (x is int && x == 1){
+                Console.WriteLine("Beam {0}: {1} generated.",
+                                  id, name);
+            }else{
+                Console.WriteLine("Failed:");
+                Console.WriteLine("Gwa say: {0}",x);
+            }
+        }
+    }
+}
+
+#+end_src
+** gen an element
+#+begin_src csharp
+
+using System;
+using ComAuto = Gsa_8_6.ComAuto;
+using GsaEntity = Gsa_8_6.GsaEntity;
+using System.IO;
+
+
+namespace lrn
+{
+    static class Program
+    {
+        static void Main(string[] args)
+        {
+            const string init_filename = @"C:\Users\congj\work\adv-str\lrn_api\gwb_files\init.gwb";
+            const string filename = @"C:\Users\congj\work\adv-str\lrn_api\gwb_files\3.gen_beam.gwb";
+            // Delete if exists
+            if (File.Exists(filename)){
+                File.Delete(filename);
+            }
+            File.Copy(init_filename, filename);
+            ComAuto gsa = new ComAuto();
+            try {
+                Console.WriteLine("Trying to open {0}", filename);
+                if (gsa.Open(filename) == 0){
+                    Console.WriteLine("OK");
+                }else{
+                    Console.WriteLine("Failed");
+                    Environment.Exit(1);
+                }
+                go(ref gsa);
+                gsa.Save();
+            } finally {
+                gsa.Close();
+                Console.WriteLine("{0}, Closed", filename);
+            }
+        }
+
+        static void go(ref ComAuto gsa){
+            Console.WriteLine("Generating beam:");
+            int id = 1, sec_id = 1, n_id1 = 1, n_id2 = 2;
+            string cmd = string.Format("EL_BEAM\t{0}\t{1}\t{1}\t{2}\t{3}\t0\t0",
+                                       id, sec_id, n_id1,n_id2);
+            var x = gsa.GwaCommand(cmd);
+            if (x is int && x == 1){
+                Console.WriteLine("Beam {0} generated at nodes ({1},{2}), with section {3}",
+                                  id, n_id1, n_id2, sec_id);
+            }else{
+                Console.WriteLine("Failed:");
+                Console.WriteLine("Gwa say: {0}",x);
+            }
+        }
+    }
+}
+
+
+#+end_src
+** gen an UDL
+   #+begin_src csharp
+   
+using System;
+using ComAuto = Gsa_8_6.ComAuto;
+using GsaEntity = Gsa_8_6.GsaEntity;
+using System.IO;
+
+
+namespace lrn
+{
+    static class Program
+    {
+        static void Main(string[] args)
+        {
+            const string init_filename = @"C:\Users\congj\work\adv-str\lrn_api\gwb_files\3.gen_beam.gwb";
+            const string filename = @"C:\Users\congj\work\adv-str\lrn_api\gwb_files\4.gen_udl.gwb";
+            // Delete if exists
+            if (File.Exists(filename)){
+                File.Delete(filename);
+            }
+            File.Copy(init_filename, filename);
+            ComAuto gsa = new ComAuto();
+            try {
+                Console.WriteLine("Trying to open {0}", filename);
+                if (gsa.Open(filename) == 0){
+                    Console.WriteLine("OK");
+                }else{
+                    Console.WriteLine("Failed");
+                    Environment.Exit(1);
+                }
+                go(ref gsa);
+                gsa.Save();
+            } finally {
+                gsa.Close();
+                Console.WriteLine("{0}, Closed", filename);
+            }
+        }
+
+        static void go(ref ComAuto gsa){
+            Console.WriteLine("Generating UDL:");
+            string name = "myUDL", list = "all", cas = "1",
+                axis = "GLOBAL", proj = "NO", dir = "Z", val = "-2";
+            string cmd = $"LOAD_BEAM_UDL.2\t{name}\t{list}\t{cas}\t{axis}\t{proj}\t{dir}\t{val}";
+            Console.WriteLine("Issueing command: {0}",cmd);
+            var x = gsa.GwaCommand(cmd);
+            if (x is int && x == 1){
+                Console.WriteLine("UDL of size {0}N/m generated for all beams in {1}-direction", val,dir);
+            }else{
+                Console.WriteLine("Failed:");
+                Console.WriteLine("Gwa say: {0}",x);
+            }
+        }
+    }
+}
+
+#+end_src
+** Client
+  #+begin_src csharp
+#+end_src

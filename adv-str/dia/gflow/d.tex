@@ -1,0 +1,80 @@
+
+\newcommand\uptodown[2][]{\draw[very thick,->](#1.south)..controls + (0,-.5cm) and + (0,.5cm).. (#2.north);}
+\newcommand\Uptodown[2][]{\draw[very thick,->](#1.south)..controls + (0,-1cm) and + (0,1cm).. (#2.north);}
+\newcommand\sdown[2][]{\draw[very thick,->](#1.south)--(#2.north);} %Straight down
+
+\newcommand{\many}[2][n]{%
+  \ensuremath{
+    \{
+    #2_1, \ldots , #2_{#1}
+    \}
+  }
+}
+\newcommand{\nele}{5}           %number of elements
+
+\begin{tikzpicture}
+  % \draw[style=help lines,step=5] (-10,10) grid (10,-10);
+  \begin{scope}
+    \tikzstyle{data}=[ellipse,draw=blue!90, fill=blue!20,text width=5cm]
+    \tikzstyle{val}=[circle,draw=blue!90, fill=blue!20]
+    \tikzstyle{proc}=[draw,rectangle]
+
+    \matrix[row sep=1cm] {
+      \node[proc] (asm_stff) {Assume a stiffness for each slice}; \\
+      \node[data] (stff) {%
+        Stiffness of each slice: \many[\nele]{B}
+      };\\
+      \node[proc] (run) {Run the analysis}; \\
+      \node[data] (M) { The moment of each slice \many[\nele]{B}
+      };\\
+      \node[proc] (chg_B) {%
+        \begin{minipage}[l]{1.0\linewidth}
+          Check the stiffness of each slice, and modify them according to the
+          following algorithm.
+          \inputminted{csharp}{ck_B.cs}
+        \end{minipage}
+      };\\
+    };
+
+    \tikzstyle{edge from parent}=[<-,thick,draw]
+    % section data
+      \node[proc] (gtBFromM) at (-20,0) {
+        \begin{minipage}[l]{1.0\linewidth}
+          We use the following logic to calculate what stiffness $B$ the slice
+          should have for the given moment $M$.
+          \inputminted{csharp}{getBFromM_short.cs}
+        \end{minipage}
+      } [grow'=up, level distance=10cm, sibling distance=7cm]
+      child {
+        node[data,text width=3cm] (sec_sag) {%
+          The sagging section $B-M$ plot.
+        };
+      }
+      child{
+        node[data,text width=3cm] (sec_hog) {%
+          The hogging section $B-M$ plot.
+        };
+      };
+
+      % The arrow for sections
+      \tikzstyle{myarr}=[<-,in=270,out=90]
+      \path (gtBFromM.north)
+       edge[myarr]  (sec_sag)
+       edge[myarr]  (sec_hog);
+
+       % the load q
+      \node[data,right of=sec_hog,node distance=7cm] (q) {The UDL $q$ on the beam (Nm$^{-1}$)};
+      \path (q) edge[->,out=270,in=180] (run);
+      \path (gtBFromM) edge[->,out=0,in=180] (chg_B);
+   
+  \end{scope}
+  % arrows
+  \begin{scope}
+    \sdown[asm_stff]{stff}
+    \sdown[stff]{run}
+    \sdown[run]{M}
+    \sdown[M]{chg_B}
+    \draw[->,thick] (chg_B.east) to [in=0, out=0] (stff.east);
+  \end{scope}
+  
+\end{tikzpicture}

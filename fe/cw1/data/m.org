@@ -1,0 +1,141 @@
+* the shape function product matrix
+** for rectangle
+#+begin_src python
+  from sympy import *
+
+  x,y,L1,L2 = symbols('x y L1 L2')
+  f2 = x/L1
+  f1 = 1-f2
+  g2 = y/L2
+  g1 = 1-g2
+
+  N = []
+  N.append(f2*g2)
+  N.append(f1*g2)
+  N.append(f1*g1)
+  N.append(f2*g1)
+
+  M = zeros(4,4)
+  for i in range(4):
+      for j in range(4):
+          M[i,j] = integrate(N[i] * N[j],
+                             (x,0,L1),
+                             (y,0,L2))
+  a = L1 * L2 / 36
+  M = M / a
+#+end_src
+** for triangle
+#+begin_src python
+from sympy import *
+x1,x2,x3,y1,y2,y3,x,y = symbols('x1 x2 x3 y1 y2 y3 x y')
+
+v = Matrix([1,x,y])
+A = Matrix([[1,x1,y1],
+            [1,x2,y2],
+            [1,x3,y3]])
+vals=[(x1,0),(y1,0),
+      (x2,1),(y2,0),
+      (x3,1),(y3,1)]
+
+A0 = A.subs(vals)
+B0 = A0 ** -1
+
+try:
+    N=[]
+    for i in range(3):
+        N.append(v.T * B0[:,i]) # ith col
+        N[i] = N[i][0]          # Take out the entry
+
+    M = zeros(3,3)
+    for i in range(3):
+        for j in range(3):
+            M[i,j] = integrate(N[i] * N[j], (y,0,x),(x,0,1))
+
+except Exception as e:
+    print('Got Exception: '+ e)
+
+    #+end_src
+* the grad shape function product matrix
+** for rectangle
+#+begin_src python
+from sympy import *
+
+x,y,L1,L2 = symbols('x y L1 L2')
+f2 = x/L1
+f1 = 1-f2
+g2 = y/L2
+g1 = 1-g2
+
+N = []
+N.append(f2*g2)
+N.append(f1*g2)
+N.append(f1*g1)
+N.append(f2*g1)
+
+Kx = zeros(4,4)
+for i in range(4):
+    for j in range(4):
+        Kx[i,j] = integrate(N[i].diff(x) * N[j].diff(x),
+                           (x,0,L1),
+                           (y,0,L2))
+
+Ky = zeros(4,4)
+for i in range(4):
+    for j in range(4):
+        Ky[i,j] = integrate(N[i].diff(y) * N[j].diff(y),
+                           (x,0,L1),
+                           (y,0,L2))
+a = (L2/L1)/6
+b = (L1/L2)/6
+Kx = Kx / a
+Ky = Ky / b
+#+end_src
+** for triangle
+#+begin_src python
+from sympy import *
+x1,x2,x3,y1,y2,y3,x,y = symbols('x1 x2 x3 y1 y2 y3 x y')
+
+v = Matrix([1,x,y])
+A = Matrix([[1,x1,y1],
+            [1,x2,y2],
+            [1,x3,y3]])
+
+vals=[(x1,0),(y1,0),
+      (x2,1),(y2,0),
+      (x3,1),(y3,1)]
+
+A0 = A.subs(vals)
+B0 = A0 ** -1
+
+try:
+    # The shape functions
+    N=[]
+    for i in range(3):
+        N.append(v.T * B0[:,i]) # ith col
+        N[i] = N[i][0]          # Take out the entry
+
+    Kx = zeros(3,3)
+    Ky = zeros(3,3)
+    # Kx the hard way
+    for i in range(3):
+        for j in range(3):
+            Kx[i,j] = integrate(N[i].diff(x) * N[j].diff(x), (y,0,x),(x,0,1))
+            Ky[i,j] = integrate(N[i].diff(y) * N[j].diff(y), (y,0,x),(x,0,1))
+
+    Kx0 = B0[1,:].T * B0[1,:] * det(A0) / 2
+    Ky0 = B0[2,:].T * B0[2,:] * det(A0) / 2
+
+    print('Kx0 Okay?: ',Kx0.equals(Kx))
+    print('Ky0 Okay?: ',Ky0.equals(Ky))
+
+except Exception as e:
+    print('Got Exception: '+ e)
+
+
+    #+end_src
+* End
+
+
+# Local Variables:
+# org-what-lang-is-for: "python"
+# End:

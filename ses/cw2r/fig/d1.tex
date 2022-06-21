@@ -1,0 +1,102 @@
+\newcommand\UpToDown[2][]{\draw[thick,->](#1.south) to [out=270,in=90] (#2.north);}
+\newcommand\LeftToLeft[2][]{\draw[thick,->](#1.west) to [out=180,in=180] (#2.west);}
+\newcommand\RightToRight[2][]{\draw[thick,->](#1.east) to [out=0,in=0] (#2.east);}
+\newcommand\RightToLeft[2][]{\draw[thick,->](#1.east) to [out=0,in=180] (#2.west);}
+\newcommand\inpage[2][4cm]{
+  \begin{minipage}[l]{#1}
+    \input{#2}
+  \end{minipage}
+}
+
+\begin{tikzpicture}
+  % \draw[style=help lines,step=1cm] (-20cm,-10cm) grid (25,60cm);
+
+  \tikzstyle{every node}=[draw]
+  \tikzstyle{every child}=[level distance=3cm, sibling distance=4cm]
+  \tikzstyle{edge from parent}=[<-,thick,draw]
+  \tikzstyle{level 1}=[rectangle]
+  \tikzstyle{level 2}=[ellipse]
+  \tikzstyle{level 3}=[rectangle]
+  \tikzstyle{level 4}=[ellipse]
+  \tikzstyle{level 5}=[rectangle]
+  \tikzstyle{level 6}=[ellipse]
+  \tikzstyle{level 7}=[rectangle]
+  \tikzstyle{level 8}=[ellipse]
+  \tikzstyle{level 9}=[rectangle]
+
+
+  % tree ep_ok <- gt_As2
+  \begin{scope}
+    \node[ellipse] (ep_ok) {Is $\epsilon_{s}$ OK?} [grow'=up]
+    child{node (cmp_ep) {\inpage[4cm]{tex/cmp_ep}}
+      child{node (ep_sy) {$\epsilon_{sy}$}
+      }
+      child{node (ep_s) {$\epsilon_s , \epsilon_s'$}
+        child{node[anchor=south] (gt_ep_s){\inpage[4cm]{tex/gt_ep_s}}
+          child[level distance=12cm, red!70!black, sibling distance=20cm]
+          {node (the4) {\inpage[6cm]{tex/the4}}
+          }
+          % level distances are set only for this level, but the option 'green'
+          % will propogate to the whole sub-stree
+          child[blue!70!black,level distance=3cm]{node (x) {The depth of neutral axis $x$}
+            child[level distance=5cm]{node (gt_x) {\inpage[6cm]{tex/gt_x}}
+              child[level distance=5cm]{node (A_s2) {$A_s, A_s'$}
+                child{node (gt_A_s2) {\inpage{tex/gt_A_s2}}
+                }
+              }
+            }
+          }
+        }
+      }
+    };
+  \end{scope}
+  % tree A_sr
+  % \begin{comment}
+    \begin{scope}
+      \node[ellipse,above of=gt_A_s2, node distance=3cm] (A_sr){$A_{s,required}$}[grow'=up]
+      child{node (gt_A_sr){\inpage[4cm]{tex/gt_A_sr}}
+        child{node (M_Eda){$M_{Ed,a}$} 
+          child{node (gt_M_Eda){Assume \(M_{Rd,a} = M_{Ed,a}\)} 
+            child{node (M_Rda) {$M_{Rd,a}$} 
+              child{node (gt_M_Rda) {\inpage[5cm]{tex/gt_M_Rda}} 
+                child{node (x_a) {$x_a$}
+                  child{node (gt_x_a) {\inpage[3cm]{tex/gt_x_a}}
+                    child{node (d) {$d$}
+                    }
+                  }
+                }
+                child{node (f_yd) {\input{tex/f_yd}}
+                  child{node[ellipse] (f_yk) {$f_{yk}$}
+                  }
+                }
+              }
+            }
+          }
+        }
+      };
+      % Draw the arrows
+      \LeftToLeft[d]{gt_A_sr}
+      \LeftToLeft[d]{gt_M_Rda}
+      \RightToRight[f_yd]{gt_A_sr}
+      \RightToLeft[the4]{gt_x}
+    \end{scope}
+  % \end{comment}
+
+  % tree A_sr -> tree ep_ok
+    \UpToDown[A_sr]{gt_A_s2}
+
+  % label the data
+  % \begin{comment}
+    % label the data
+    \newcounter{data} \foreach \x in {A_sr,M_Eda}{ \refstepcounter{data}
+      \label{data:\x} %By using this, we can use \ref{data:A_sr} in
+      % our nodes
+      \node[fill=gray!20,circle,xshift=.3cm,font=\scriptsize] at (\x.south east) {p\thedata}; }
+
+    % label the procedures
+    \newcounter{proc} \foreach \x in {gt_A_sr,gt_M_Eda}{ \refstepcounter{proc}
+      \label{proc:\x} %By using this, we can use \ref{proc:A_sr} in
+      % our nodes
+      \node[fill=gray!20,circle,xshift=.3cm,font=\scriptsize] at (\x.south east) {d\theproc}; }
+  % \end{comment}
+\end{tikzpicture}

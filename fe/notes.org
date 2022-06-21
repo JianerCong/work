@@ -1,0 +1,386 @@
+** Lecture note 1
+*** Use the three models
+#+begin_src python
+  from sympy import *
+
+  # Use model
+  a,x = symbols('a x')
+  u = a * x * (1 - x)
+
+  ud = diff(u,x)
+  udd = diff(ud,x)
+  r = udd + u + x
+
+  # Method 1 : Collocation
+  xi = Rational(1,2)
+  I1 = integrate(DiracDelta(x-xi) * r,(x,0,1))
+  # Just solve
+  a1 = solveset(I1,a)
+  I1_2 = r.subs(x,xi) # I1 - I2_2 should be 0
+
+  # Method 2 : Least square
+  I2 = integrate(r ** 2,(x,0,1))
+  I2d = diff(I2,a)
+  a2 = solveset(I2d,a)
+
+  # Method 3 : Galerkin Method
+  I3 = integrate(u * r, (x,0,1))
+  a3 = solveset(I3,a)
+
+#+end_src
+*** Get the exact solution
+   #+begin_src python
+   from sympy import *
+
+# Exact solution
+x = symbols('x')
+u = symbols('u',cls=Function)
+d = Eq( u(x).diff(x,2) + u(x) + x, 0)
+r1 = dsolve(d,u(x))
+r2 = dsolve(d,u(x),ics={u(0):0, u(1):0})
+
+#+end_src
+*** Galerkin's method, strong vs weak
+    Find the model parameters [a1,a2] using weak/strong Galerkin's method.
+#+begin_src python
+from sympy import *
+
+# a1, a2 from weak galerkins formulation
+
+x , a1, a2= symbols('x a1 a2')
+v1 = x * (1 - x)
+v2 = (x ** 2) * (1 - x)
+u1 = a1 * v1 + a2 * v2
+
+u , v = symbols('u v',cls=Function)
+base =  - u(x).diff(x) * v(x).diff(x) + u(x) * v(x) + x * v(x)
+
+b1 = base.subs([(u(x),u1) , (v(x), v1)])
+d1 = integrate(b1.doit(), (x,0,1))
+b2 = base.subs([(u(x),u1) , (v(x), v2)])
+d2 = integrate(b2.doit(), (x,0,1))
+
+r_weak = linsolve([d1,d2], (a1,a2))
+
+# a1, a2 from strong galerkin formulation
+R = u(x).diff(x,x) + u(x) + x
+u2 = u1
+R = R.subs(u(x),u2).doit()
+eq1 = R * v1
+eq2 = R * v2
+I1 = integrate(eq1, (x,0,1))
+I2 = integrate(eq2, (x,0,1))
+r_strong = linsolve([I1,I2], (a1,a2))
+
+ok = r_strong == r_weak
+print('Is strong formulation same as the weak formulation? :{0}'.format(ok))
+
+#+end_src
+*** shape functions
+#+begin_src python
+from sympy import *
+
+x0,x1,x= symbols('x0 x1 x')
+A = Matrix([[1,x0],[1,x1]])
+v = Matrix([[1,x]])
+B = A**-1
+
+N = v * B
+
+#+end_src
+** Lecture note 2
+** Lecture note 5 Beams and frames
+*** the two nodes shape functions
+**** plot
+#+begin_src R
+  library(tidyverse)
+  L <- 1
+  f <- function(a,b,c,d){
+    ## message('Making function for ',
+    ##         gettextf('%d %d %d %d',a,b,c,d))
+    ## 好像必须得eval一下a,b,c,d 才能让以下的work
+    a;b;c;d
+    ## 所以 comment out the above expression will fail to make the closure
+    function(x){
+      a + b*x + c*x^2 + d*x^3
+    }
+  }
+
+  l <- list(
+    c(1,0,-3,2),
+    c(0,1,-2,1),
+    c(0,0,3,-2),
+    c(0,0,-1,1)
+  )
+
+  N <- list()
+  for (i in seq_along(l)){
+    ## message('Appending for ', i)
+    a <- l[[i]]
+    ## message('a is ', a)
+    N <- append(N,f(
+                    a[[1]],
+                    a[[2]],
+                    a[[3]],
+                    a[[4]]
+                  ))
+  }
+
+  n <- 100
+  tf <- tibble(
+    x = 0:n * L/n,
+    N1= N[[1]](x),
+    N2= N[[2]](x),
+    N3= N[[3]](x),
+    N4= N[[4]](x)
+  )
+
+  tf <- tf %>% pivot_longer(c('N1','N2','N3','N4'),
+                            names_to='lab',
+                            values_to='N'
+                            )
+  p <- ggplot(data=tf,aes(x=x,y=N,colour=lab))+
+    geom_line()
+  ## geom_point()
+#+end_src
+**** their property
+#+begin_src python
+  from sympy import *
+  x,L=symbols('x L')
+  xl=x/L
+  N=Matrix([
+      1-3*xl**2 + 2*xl**3,
+      x - 2*x**2/L + x**3/L**2,
+      3*xl**2 - 2*xl**3,
+      -x**2/L + x**3/L**2
+  ])
+  N
+
+  Nx=diff(N,x)
+  Nx
+
+  Matrix.hstack(
+      N.subs(x,0),Nx.subs(x,0),
+      N.subs(x,L),Nx.subs(x,L)
+  )                               # I4
+#+end_src
+*** the 2-node fe equation
+#+begin_src python
+from sympy import *
+x,L=symbols('x L')
+xl=x/L
+N=Matrix([
+    1-3*xl**2 + 2*xl**3,
+    x - 2*x**2/L + x**3/L**2,
+    3*xl**2 - 2*xl**3,
+    -x**2/L + x**3/L**2
+])
+N
+
+Nx=diff(N,x)
+Nx
+
+Matrix.hstack(
+    N.subs(x,0),Nx.subs(x,0),
+    N.subs(x,L),Nx.subs(x,L)
+)                               # I4
+
+Nxx=diff(N,x,x)
+Nxx
+
+K0=Nxx*Nxx.T
+integrate(K0,(x,0,L))*L**3 # K is this times EI*L^3
+
+fl=integrate(N,(x,0,L))
+fl*12/L
+#+end_src
+*** simply-supported beam
+**** (b) deflection at midspan
+#+begin_src python
+from sympy import *
+EI,L,f,x=symbols('EI L f x')
+
+
+xl=x/L
+N=Matrix([
+    1-3*xl**2 + 2*xl**3,
+    x - 2*x**2/L + x**3/L**2,
+    3*xl**2 - 2*xl**3,
+    -x**2/L + x**3/L**2
+])
+N
+
+u=f*L**3/(24*EI)*Matrix([0,1,0,-1])
+u
+
+v=u.T * N
+v
+
+v.subs(x,L/2)
+#+end_src
+*** cantilever with triangular load
+**** fl
+#+begin_src python
+from sympy import *
+EI,L,f,x=symbols('EI L f x')
+
+xl=x/L
+N=Matrix([
+    1-3*xl**2 + 2*xl**3,
+    x - 2*x**2/L + x**3/L**2,
+    3*xl**2 - 2*xl**3,
+    -x**2/L + x**3/L**2
+])
+N
+
+fl = integrate(N*x,(x,0,L))
+fl*60/L**2
+#+end_src
+**** exact vs fe solution
+#+begin_src python
+  from sympy import *
+  EI,L,f,x=symbols('EI L f x')
+
+  # Double integration solution --------------------------------------------------
+  al=symbols('alpha')
+  M=al/6*(2*L**3 - 3*L**2*x + x**3)
+  M
+
+  M.subs(x,0)                     # M @ 0
+  M.subs(x,L)                     # M @ L
+
+  i=integrate
+  th=i(M,x)/EI                    # theta(x)
+  th
+
+  th.subs(x,L)                    # theta @ L
+
+  v=i(th,x)
+  v.simplify()
+  v.subs(x,L)                     # deflection @ L
+
+  # FE solution --------------------------------------------------
+  v=Matrix([21,-3*L])
+  a=Matrix([[2*L**2,3*L],
+           [3*L,6]])
+  a
+
+  k=al*L**3/(360*EI)
+  k*a*v                           # [deflection(L), theta(L)]
+
+#+end_src
+** the general 1D
+#+begin_src python
+  from sympy import *
+  ae=1
+  xe=0
+  xe1=Rational(1,4)
+  ce=-1
+
+  def get_local_K_linear(ae,he,ce):
+      A = ae/he * Matrix([[1,-1],[-1,1]])
+      B = ce*he/6*Matrix([[2,1],[1,2]])
+      return A+B
+
+  c=-1
+  a=1
+  # the local stiffness matrix
+  get_local_K_linear(ae=a,he=Rational(1,4),ce=c)
+
+  from sympy import *
+  x1,x2,x = symbols('x1 x2 x')
+
+  def get_local_phi(x1,x2):
+      f1=(x-x2)/(x1-x2)
+      f2=(x-x1)/(x2-x1)
+      return (Matrix([f1,f2]))
+
+
+  def get_local_fl(x1,x2,f):
+      v=get_local_phi(x1,x2)
+      return(
+      integrate(f*v,(x,x1,x2))
+      )
+
+  # the f
+  f=-x**2
+
+  n=4
+  l=[]
+  for i in range(n):
+      # the fl's
+      x1 = Rational(i,n)
+      x2 = x1 + Rational(1,n)
+      l.append(get_local_fl(x1,x2,f))
+      print('For element %d: fl is: ' % (i),l[i].evalf())
+
+#+end_src
+** 2D
+*** K for trianglar element
+#+begin_src python
+  # Get the K for triangle (0,0)--(a,0)--(0,b)
+  from sympy import *
+  a,b = symbols('a b')
+  A = Matrix([
+      [1,0,0],
+      [1,a,0],
+      [1,0,b]
+  ])
+  Ai = A ** -1
+  Ai = Ai * det(A)
+  Ai
+
+  be = Ai[1,:]
+  ga = Ai[2,:]
+  K1 = Matrix(3,3,lambda i,j : be[i]*be[j])
+  K1
+
+  K2 = Matrix(3,3,lambda i,j : ga[i]*ga[j])
+  K2
+
+#+end_src
+*** for rectangular elem
+#+begin_src python
+
+from sympy import *
+
+a,b = symbols('a b')
+v = diag(2,2,2,2)
+A1 = Matrix([
+    [0,0,0,0],
+    [-2,0,0,0],
+    [-1,1,0,0],
+    [1,-1,-2,0]
+])
+A2 = Matrix([
+    [0,0,0,0],
+    [1,0,0,0],
+    [-1,-2,0,0],
+    [-2,-1,1,0]
+])
+
+S11 = v + A1 + A1.T
+S22 = v + A2 + A2.T
+
+# multiply this by a11*b/(6a) to give S11
+S11
+
+# multiply this by a22*a/(6b) to give S22
+S22
+
+# when a11 = a22 = ke
+# multiply this by ke/(6ab) to give K
+K = b**2 * S11 + a**2 * S22
+K
+
+# situation when a/b = 1
+# multiply this by ke/(6ab) to give K
+K1 = K.subs(a,b)
+K1/ (b**2)
+#+end_src
+* End
+
+
+# Local Variables:
+# org-what-lang-is-for: "python"
+# End:

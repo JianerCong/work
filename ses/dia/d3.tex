@@ -1,0 +1,291 @@
+
+
+\tikzstyle{edge from parent}=[->,thick, draw=black]
+% \begin{tikzpicture}
+\begin{scope}[x=1cm,y=1cm]
+  \tikzstyle{every node}=[draw, ellipse,text centered]
+  % \draw[style=help lines] (-10,20) grid (10,-30);
+
+  \tikzstyle{edge from parent}=[<-,thick,draw]
+  \tikzstyle{every child}=[level distance = 2cm]
+  \tikzstyle{level 1}=[ellipse, sibling distance=5cm]
+
+  \node[rectangle,anchor=south] (gt_combs) {%
+    \begin{minipage}[l]{1.0\linewidth}
+      Get the 8 + 1 combinations of load:
+
+      \begin{itemize}
+      \item The combination without seismic loads
+      \item 8 combinations which includes
+        \begin{itemize}
+        \item 4 Combinations if the main direction is in $X$
+        \item 4 if in $Y$
+        \end{itemize}
+      \end{itemize}
+
+      \emph{BUT}, because our building is symetric $X$ and in $Y$~-direction.
+      So only 2 combinations is needed for each direction. \emph{So in the end
+        we only need 2 + 2 + 1 combinations (i.e. 5).} Which are
+      \newcommand{\mf}{\ensuremath{G + \Psi_E Q}}
+      \newcommand{\mff}[3][+]{\ensuremath{ W + E_{#2} #1 0.3E_{#3}}}
+      \begin{itemize}
+      \item Without seismic load : \mf \/ (Let's call it $W$)
+      \item Two cases for $X$ :
+        \begin{enumerate}
+        \item \mff{x}{y}
+        \item \mff[-]{x}{y}
+        \end{enumerate}
+      \item Two cases for $Y$ :
+        \begin{enumerate}
+        \item \mff{y}{x}
+        \item \mff[-]{y}{x}
+        \end{enumerate}
+      \end{itemize}
+    \end{minipage}
+  } [grow'=up, growth parent anchor=north]
+  child{node (E) {The seismic loads $E$}}
+  child{node (Psi_E) {the load factor $\Psi_E$}}
+  ;
+
+  \newcommand{\twotwoone}{%
+    \ensuremath{%
+      \cola[2] + 
+      \colb[2] +
+      \colc[1]
+    }
+  } 
+  \node[text width=5cm,anchor=north] at ([yshift=-2cm] gt_combs.south) (combs) {%
+    \begin{minipage}[l]{1.0\linewidth}
+      The \twotwoone combinations \\
+      \[
+        \{
+        \cola[C_{X,l}, C_{X,r}], \colb[C_{Y,l}, C_{Y,r}],\colc[C_{0}]
+        \}
+      \]
+
+      Where $C_{X,l}$ means the combination that the major seismic load comes
+      from the $X$~-direction, and the minir seismic load is at the \emph{left}
+      of the major load.
+      
+    \end{minipage}
+  };
+
+
+  % load cases
+  \newcommand{\lda}[1][]{%
+    \cola[{L_{#1}}]
+  }
+
+  \newcommand{\ldb}[1][]{%
+    \colb[{L_{#1}}]
+  }
+
+
+  
+  \tikzstyle{level 1}=[sibling distance=8cm,anchor=north]
+  \node[rectangle] at ([yshift=-2cm] combs.south) (ecc_do) {Consider eccentricity ?}
+  [grow'=down]
+  child {
+    node[rectangle,text width=8cm] (ecc_yes) {%
+      \begin{minipage}[l]{1.0\linewidth}
+        \S EC-8 4.3.2: Get 9 cases \\[0.2cm]
+        Each of the combinations (excluding $\colc[C_{0}]$ the one which has self-weight only)
+        should be applied to 4 different locations around the centre of the mass
+        to account for the required. However, again, since our building is
+        symetrical in $X$ and $Y$~-directions. It is enough to apply each
+        combination to 2 different locations (one shifted in $X$~-direction, and
+        one shifted in $Y$.)
+        Therefore, the result will be $2 \times (\cola[2] + \colb[2]) + \colc[1] = 9$ cases to run.
+      \end{minipage}
+    }
+    child[level distance=4cm]{
+      node[text width=6cm] (the_ecc_yes){%
+        \begin{minipage}[l]{1.0\linewidth}
+          9 load cases to run
+          \[
+            \begin{matrix}
+              \colc[C_{1}] & & & \\
+              \lda[{X,r,X}] &  \lda[{X,r,Y}] &
+              \lda[{X,l,X}] &  \lda[{X,l,Y}] \\
+              \ldb[{Y,r,X}] &  \ldb[{Y,r,Y}] &
+              \ldb[{Y,l,X}] &  \ldb[{Y,l,Y}] \\
+            \end{matrix}
+          \]
+          Where $\lda[{X,r,Y}]$ means the load case based on combination $C_{x,r}$,
+          and the point of application is shifted in the $Y$~-direction.
+        \end{minipage}
+      };
+    };
+  }
+  child {node[rectangle,text width=3cm] (ecc_no) {%
+      \begin{minipage}[l]{1.0\linewidth}
+        Get 5 cases \\[0.2cm]
+        All  $ \twotwoone = 5$ combinations applied to the centre of mass, which
+        means 5 cases to run.
+      \end{minipage}
+    };
+  };                          %end of children of ecc_do
+  
+\end{scope}
+
+% Draw a top-to-down line connecting node #1 and #2, with text #3 is placed at
+% the mid point of arrow.
+\newcommand{\sdowntxt}[4][]{%
+  \draw[very thick,->](#1.south) -- node[auto,draw=none,#4] {#3} (#2.north);
+  % The nodes are given somehow inside the to operation! When this is done,
+  % the node is placed on the middle of the curve or line created by the to
+  % operation. The auto option then causes the node to be moved in such a way
+  % that it does not lie on the curve,
+}
+
+% arrows
+
+\begin{scope}
+  \sdown[gt_combs]{combs}
+  \sdown[combs]{ecc_do}
+  \sdowntxt[ecc_do]{ecc_yes}{Yes}{ }
+  \sdowntxt[ecc_do]{ecc_no}{No}{swap}
+  \sdown[ecc_yes]{the_ecc_yes}
+\end{scope}
+
+\begin{scope}[shift={([xshift=6cm,yshift=-2cm] the_ecc_yes.east)}]
+  \input{flr}
+\end{scope}
+
+
+
+
+\begin{scope}
+  \tikzstyle{every node}=[draw=black, ellipse,text centered,text width=4cm]
+  \tikzstyle{every child}=[level distance = 3cm]
+  \tikzstyle{level 2}=[rectangle, sibling distance=13cm]
+
+  \node (run) [rectangle,below of=the_ecc_yes, node distance=4cm] {Input these load cases into GSA
+
+    and run.};
+  \newcommand{\getfour}[2][]{\{#2_{#1,1},#2_{#1,2},#2_{#1,3},#2_{#1,4}\}}
+  \node (gsa_result) [node distance=4cm, below of=run]{
+    \begin{minipage}[l]{1.0\linewidth}
+      For each load case, we get the displacement of the structural system
+      determined by the linear analysis.
+      \[
+        d_e = \getfour[e]{d}
+      \]
+    \end{minipage}
+  } [grow = down]
+  child[level distance=5cm] {
+    node[rectangle, text width=8cm] (gt_ds){
+      \begin{minipage}[l]{1.0\linewidth}
+        \S EC-8 4.3.4 (1) Calc the inelastic displacement
+        induced by the design seismic action from the elastic one;
+          \begin{align*}
+            d_s &= d_e \times q \\
+            \\[-1cm]               %remove the extra spacing
+            \intertext{Where}
+            \\[-1cm]               %remove the extra spacing
+            q &: \mbox{the behavior factor from d18}
+          \end{align*}
+      \end{minipage}
+    } child {
+      node (ds) {
+        \[
+          d_s = \getfour[s]{d}
+        \]
+      } child{ node[rectangle,text width=7cm] (ck_second_ord) {
+          \begin{minipage}[l]{1.0\linewidth}
+            {Check for 2$^{nd}$ order effects }\\
+            \smallskip
+            to see whether we can design the structure based upon the load
+            cases we have been used so far.
+          \end{minipage}
+        } edge from parent [->]
+        child[level distance =5cm]{ node[rectangle, text width=8cm] (gt_dri) {
+            \begin{minipage}[l]{1.0\linewidth}
+              \S 4.3.4 Calc the \emph{interstorey drift\/} $d_r$, evaluated as the
+              difference of the average lateral displacement $d_s$ at the top
+              and bottom of the storey under consideration
+              \[
+                d_{r,i} = d_{s,top,i} - d_{s,bottom,i}
+              \]
+              Where $d_{s,top,i}$ is the $d_{s}$ of the storey above the
+              $i^{th}$ storey, and $d_{s,bottom,i}$ is the $d_{s}$ of the storey
+              below the $i^{th}$ storey. 
+            \end{minipage}
+          } edge from parent [->];
+        };
+      }child{ node[rectangle, text width=7.5cm] (ck_SLS){
+          \begin{minipage}[l]{1.0\linewidth}
+            Check the Damage limit state (DLS):
+            Use the reduced displacement $d_{s,reduced} := d_s \nu $
+            Where
+            \[
+              \nu := 
+              \begin{cases}
+                0.5 & \mbox{For importance class I and II}\\
+                0.4 & \mbox{For importance class III and IV}\\
+              \end{cases}
+              \]
+          \end{minipage}
+        } edge from parent [->];
+      }
+    }
+  };
+
+
+  \matrix (the_four) [matrix anchor=dri.north, draw=none,
+  column sep=2cm] at ([yshift=-3cm] gt_dri.south) {
+    \node (tot_grav) [text width=4cm]{
+      The total gravity load \emph{at and above} each storey
+      \[ \getfour[tot]{P} \]
+    }; &
+    \node (dri) {
+        The $d_r$ for each storey
+        \[
+          \getfour[r]{d}
+        \]
+    }; &
+      \node (hi) {
+        The interstorey height $\{h_1, h_2, h_3, h_4\}$
+      }; &
+      \node (tot_ses_shr) {
+        The total seismic shear $V_{tot} = F_b$ (See d11)
+      };\\
+  };
+
+  \uptodown[gt_dri]{dri}
+  \node[below of=the_four, node distance=6cm, rectangle] (gt_th){
+    \begin{minipage}[l]{1.0\linewidth}
+      \S EC-8 4.4.2.2 (2) For each storey, calc the \emph{interstorey drift sensitivity coefficient}
+      \[
+        \theta_i = \frac{P_{tot,i}
+          d_{r,i}}{V_{tot}h_i}
+        \]
+    \end{minipage}
+  } [grow=down] child { node[text width=3cm] (th) {
+      $\{ \theta_1, \theta_2, \theta_3, \theta_4\}$
+    } child { node[rectangle, text width =10cm] (ck_th){
+        \begin{minipage}[l]{1.0\linewidth}
+          For each $\theta$ check
+          \[
+            \begin{cases}
+              \mbox{OK} & \mbox{if} \quad \theta < 0.1 \\
+              \mbox{A value $\lambda$ should be applied to this storey}
+              & \mbox{if}  \quad 0.1 < \theta < 0.2 \\
+              \mbox{NOPE, second order effect can't be ignored} & \mbox{otherwise}\\
+            \end{cases}
+          \]
+        \end{minipage}
+      } edge from parent [->];
+    }
+  };
+
+  \foreach \x in {tot_grav, dri, hi, tot_ses_shr}{
+    \uptodown[\x]{gt_th}
+  }
+  \uptodown[run]{gsa_result}
+  \uptodown[the_ecc_yes]{run}
+
+\end{scope}
+
+
+% \end{tikzpicture}

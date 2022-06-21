@@ -1,0 +1,499 @@
+\newcommand{\dXX}[2][x]{
+  \ensuremath{\frac{\partial^2 #2}{\partial #1^2}}
+}
+\newcommand{\dX}[2][x]{
+  \ensuremath{\frac{\partial #2}{\partial #1}}
+}
+\newcommand{\dxx}[1]{\dXX{#1}}
+\newcommand{\dyy}[1]{\dXX[y]{#1}}
+\newcommand{\dx}[1]{\dX{#1}}
+\newcommand{\dy}[1]{\dX[y]{#1}}
+\newcommand{\phin}{\ensuremath{
+    \dX[\mathbf{n}]{\phi} 
+  }}
+\begin{questionbox}
+  The function $\phi(x,y)$ is governed by
+\begin{align}
+\dxx{\phi} + \dyy{\phi} = 0 \label{eq:poi}
+\end{align}
+The mesh is shown in the following figure:
+
+\input{img/mesh}
+
+\MySet{bd.col.1}{\mycola}
+\MySet{bd.col.2}{\mycolb}
+\MySet{bd.col.3}{\mycolc}
+\MySet{bd.col.4}{\mycola}
+\MySet{bd.col.5}{\mycolb}
+\foreach \n/\i in {
+  1/\mycola,
+  2/\mycolb,
+  3/\mycolc,
+  4/\mycola,
+  5/\mycolb}{
+  \MySet{bd.col.\n}{\i}
+}
+
+\newcommand{\bd}[1]{\bLabBox[\MyGet{bd.col.#1}]{#1}}
+\newcommand{\el}[1]{\nLabBox[\MyGet{el.col.#1}]{#1}}
+
+% \foreach \n/\i in {
+%   a/\mycola,
+%   b/\mycolb,
+%   c/\mycolc,
+%   d/\mycola,
+%   e/\mycolb,
+%   f/\mycolc}{
+%   \MySet{el.col.\n}{\i}
+% }
+% Don't know why it dosn't work   
+\MySet{el.col.a}{\mycola}
+\MySet{el.col.b}{\mycolb}
+\MySet{el.col.c}{\mycolc}
+\MySet{el.col.d}{\mycola}
+\MySet{el.col.e}{\mycolb}
+\MySet{el.col.f}{\mycolc}
+
+Where \bd{1} to \bd{5} are boundaries,
+and \el{a} to \el{f} are elements.
+
+And the BCs are:
+\def\f#1{\mbox{Along \bd{#1}: }}
+\begin{align}
+    \f{1} & \phin = 0 &  \f{2} & \phi = au_0 \notag\\
+    \f{3} & \phin = 0 & \f{4} & \phi = 0 \notag\\ 
+    \f{5} & \phi = 0 && \notag
+\end{align}
+\end{questionbox}
+
+\subsection*{Answer}\label{sec:q2}
+\subsubsection*{Weak formulation}
+Let $v$ be an arbitrary test function, the weak formulation of \cref{eq:poi} is
+then
+\newcommand{\inta}[1]{
+  \ensuremath{\int_{\text{Domain}} #1 \text{dA}}
+}
+\newcommand{\intb}[1]{
+  \ensuremath{\int_{\text{Boundary}} #1 \text{ds}}
+}
+
+\def\x{
+  \ensuremath{\inta{\nabla \phi \bullet \nabla v}}
+}
+\def\y{
+  \ensuremath{\intb{\phin v}}
+}
+
+
+\begin{align}
+  0 &= \inta{(\dxx{\phi} + \dyy{\phi}) v} \notag\\
+  \intertext{By Gauss-Green}
+    &= \inta{-\dx{\phi}\dx{v} - \dy{\phi}\dy{v}} +
+      \intb{
+      (\dx{\phi}\dx{n} + \dy{\phi}\dy{n})v
+      } \notag\\
+    &= -\x + \y \notag
+\end{align}
+Therefore,
+\begin{align}
+  \x &= \y \label{eq:tosub}
+\end{align}
+Now according to Galerkin's method, we take $v = \phi = N_j\phi_j$, which gives
+\begin{align}
+  \nabla v &= \nabla \phi = \nabla (N_i \phi_i) \notag\\
+           &= \sum_i \phi_i \nabla N_i \notag\\
+  &= \sum_i \phi_i
+    \begin{bmatrix}
+      \dx{N_i} \\ \dy{N_i}
+    \end{bmatrix} \notag
+\end{align}
+Therefore, substituting the above into \cref{eq:tosub} gives
+\def\x{\ensuremath{\inta{\nabla (N_i)\nabla (N_j)}}}
+\def\bi{\ensuremath{\intb{\phin N_i}}}
+\begin{align}
+  \phi_i \inta{\nabla N_i \nabla N_j} \phi_j &= \intb{\phin N_j \phi_j} \notag\\
+  \phi_i K_{ij} \phi_j &= b_i \phi_i \notag\\
+  \intertext{Where}
+  K_{ij} &= \x = \inta{\dx{N_i}\dx{N_j} + \dy{N_x}\dy{N_j}} \notag\\
+  b_i &= \bi \notag
+\end{align}
+Taking derivatives with respect to $\mathbf{\phi} = [\phi_1, \dotsc, \phi_n]$,
+and setting it to 0 gives the finite element equation
+\def\tr#1{\ensuremath{{#1}^{\text{T}}}}
+\def\p{\mathbf{\phi}}
+\begin{align}
+  \dX[\p]{\tr{\p} \mathbf{K} \p - \tr{\p}\mathbf{b}} &= 0 \quad \Rightarrow \quad
+                                                       \mathbf{K}\p = \mathbf{b}
+                                                       \label{eq:fe} \\
+  \intertext{Where}
+  \mathbf{K}_{ij} &= K_{ij} \quad \mathbf{b}_{i} &= b_i \notag
+\end{align}
+\def\K{\ensuremath{\mathbf{K}}}
+We calculate \K element by element. But before we start, we derive the general
+formulae that calculate the ``local stiffness matrix'' $K_{ij} = \x $ on a
+rectangular element and a triangular element.
+
+\subsubsection*{Local stiffness matrix for a rectangular element}
+For a rectangular element as shown below
+
+\begin{center}
+  \input{img/rec}
+\end{center}
+
+\newcommand{\shpf}{shape functions}
+The \shpf{} are
+\newcommand{\Ni}[1]{\ensuremath{N_i(x,y)}}
+\newcommand{\Nij}[2]{\dX[#2]{N_{#1}}}
+\def\g#1{\ensuremath{g_{#1}(y)}}
+\def\f#1{\ensuremath{f_{#1}(x)}}
+\newcommand{\vg}{
+  \begin{bmatrix}
+    \g2 \\ \g1
+  \end{bmatrix}
+}
+
+\begin{align}
+  \begin{bmatrix}
+    \Ni{4} & \Ni{3}\\
+    \Ni{1} & \Ni{2}
+  \end{bmatrix} &= \vg
+             \begin{bmatrix}
+               \f1 & \f2
+             \end{bmatrix} \notag\\
+  \intertext{Where}
+  \begin{bmatrix}
+    \f2\\ \f1
+  \end{bmatrix}
+           &=
+             \begin{bmatrix}
+               f_2\\f_1
+             \end{bmatrix}
+           =
+                  \begin{bmatrix}
+                    \frac{x}{L1} \\
+                    1 - \f2
+                  \end{bmatrix} \notag\\
+  \vg &=
+        \begin{bmatrix}
+          g_2\\g_1
+        \end{bmatrix}
+           =
+             \begin{bmatrix}
+               \frac{y}{L2} \\
+               1 - \g2
+             \end{bmatrix} \notag
+  \intertext{And their derivatives are}
+  \begin{bmatrix}
+    f_2' \\
+    f_1'
+  \end{bmatrix}
+           &=
+             \begin{bmatrix}
+               \frac{1}{L1}\\
+               - f_2'
+             \end{bmatrix} \notag\\
+  \begin{bmatrix}
+    g_2' \\
+    g_1'
+  \end{bmatrix}
+           &=
+             \begin{bmatrix}
+               \frac{1}{L2}\\
+               - g_2'
+             \end{bmatrix} \label{eq:fgvals}
+\end{align}
+Note that we have arranged the \shpf{} such that their position on the matrix above
+are similar to their corresponding nodes on the figure above.
+
+Now we calculate \Nij{i}{x} and \Nij{i}{y}
+\newcommand{\Nx}{\ensuremath{\dx{\mathbf{N}}}}
+\newcommand{\Ny}{\ensuremath{\dy{\mathbf{N}}}}
+
+\def\mv#1#2{
+  \ensuremath{\begin{bmatrix}#1 \\ #2\end{bmatrix}}
+}
+\def\mh#1#2{
+  \ensuremath{\begin{bmatrix}#1 & #2\end{bmatrix}}
+}
+\def\x{\mv{g_2}{g_1}}
+\def\y{
+  % \ensuremath{\begin{bmatrix} f_1 & f_2 \end{bmatrix}}
+  \ensuremath{\mh{f_1}{f_2}}
+}
+\begin{align}
+  \Nx &=
+        \begin{bmatrix}
+          \Nij{4}{x} & \Nij{3}{x} \\
+          \Nij{1}{x} & \Nij{2}{x} 
+        \end{bmatrix}
+                       = \x \mh{f_1'}{f_2'} = \x \mh{-f_2'}{f_2'}
+                       = f_2' \x \mh{-1}{1}
+                       \notag\\
+  \Ny &=
+        \begin{bmatrix}
+          \Nij{4}{y} & \Nij{3}{y} \\
+          \Nij{1}{y} & \Nij{2}{y} 
+        \end{bmatrix}
+                       = \mv{g_2'}{g_1'} \y = \mv{g_2'}{-g_2'} \y
+                       = g_2'\mv{1}{-1} \y \notag
+\end{align}
+\def\Kx{\ensuremath{\mathbf{K_x}}}
+\def\Ky{\ensuremath{\mathbf{K_y}}}
+\newcommand{\Mij}[1]{
+  \ensuremath{
+    {\left[ #1 \right]}_{ij}
+  }
+}
+Now er define two matrices \Kx and \Ky as follows:
+\newcommand{\intc}[1]{
+  \ensuremath{\int_0^{L2} \int_0^{L1} #1 \text{dxdy}}
+}
+\begin{align}
+  \K &= \Kx + \Ky \notag\\
+  \intertext{Where}
+  \Mij{\Kx} &= \intc{\Nij{i}{x} \Nij{j}{x}} \notag\\
+  \Mij{\Ky} &= \intc{\Nij{i}{y} \Nij{j}{y}} \notag
+\end{align}
+Next we flatten the (derivatives) \shpf{} matrices into column vectors by
+defining:
+\def\f#1{\ensuremath{N_{#1} &=
+    \begin{bmatrix}
+      \Nij{1}{#1} &
+      \Nij{2}{#1} &
+      \Nij{3}{#1} &
+      \Nij{4}{#1} 
+    \end{bmatrix}
+  }
+}
+\begin{align}
+  \f{x} \notag\\
+  \f{y} \notag
+\end{align}
+So, $K_x$ and $K_y$ are
+\begin{align}
+  K_x &= \intc{\tr{N_x}N_x} \notag\\ 
+  K_y &= \intc{\tr{N_y}N_y} \notag
+\end{align}
+Substituting the values in \cref{eq:fgvals} gives
+
+\newcommand{\G}[1]{\MyGet{#1}}
+\begin{align}
+  K &= K_x + K_y \label{eq:recK} \\
+  K_x &= \frac{1}{6} \frac{L_2}{L_1} \G{rec.Kx} \notag\\ 
+  K_y &= \frac{1}{6} \frac{L_1}{L_2} \G{rec.Ky} \notag
+\end{align}
+
+\subsubsection*{Local stiffness matrix for a triangular element}
+For a triangular element as shown below
+
+\begin{center}
+\input{img/tri}
+\end{center}
+
+The \shpf{} are
+\def\N{\ensuremath{\mathbf{N}}}
+\def\B{\ensuremath{\mathbf{B}}}
+\def\A{\ensuremath{\mathbf{A}}}
+\def\vxy{\ensuremath{\begin{bmatrix} 1&x&y \end{bmatrix}}}
+\begin{align}
+  \N &=
+       \begin{bmatrix}
+         \Ni{1} & \Ni{2} & \Ni{3} 
+       \end{bmatrix} \notag\\
+     &= \vxy \B = \vxy
+       \begin{bmatrix} r_1 \\ r_2 \\ r_3 \end{bmatrix} \notag\\
+  &= r_1 + xr_2 + yr_3
+  \intertext{Where}
+  r_i &= \text{The $i^{th}$ row of \B} \notag\\
+  \B &= \A^{-1} \notag\\
+  \A &=
+       \begin{bmatrix}
+         1 & x_1 & y_1 \\
+         1 & x_2 & y_2 \\
+         1 & x_3 & y_3 
+       \end{bmatrix} \notag
+\end{align}
+Note that \shpf{} are linear, so their derivatives with respect to $x$ and $y$
+are constant, which turns out to be entries in \B.
+\def\f#1{
+  \ensuremath{
+    N_{#1} := \dX[#1]{\N} =
+    \tr{
+      \begin{bmatrix}
+        \dX[#1]{N_1} &
+        \dX[#1]{N_2} &
+        \dX[#1]{N_3} 
+      \end{bmatrix}
+    }
+      }
+    }
+\begin{align}
+  \f{x} = r_2 \notag\\
+  \f{y} = r_3 \notag
+\end{align}
+Similar to what we have done to for the rectanglar element, we define \Kx and
+\Ky as follows:
+
+\newcommand{\intd}[1]{
+  \ensuremath{
+    \int_{\text{A}}
+    #1
+    \text{dA}
+  }
+}
+\def\f#1{
+  \ensuremath{
+    \Mij{K_{#1}} := \intd{\dX[#1]{N_i} \dX[#1]{N_j}}
+  }
+}
+\def\dN#1{
+  \ensuremath{\dX[#1]{\N}}
+}
+\def\dNdN#1{\tr{N_{x}}N_{x}}
+
+\begin{align}
+  \f{x} \notag\\
+  \f{y}
+  \notag
+\end{align}
+Where integrate over A means ``Integrate over the entire triangular element''.
+However, since $N_x$ and $N_y$ are actually constant vector, therefore
+\def\ar{ \text{area of triangular element}}
+\begin{align}
+  K_x  = \intd{\dNdN{x}} = r_2\tr{r_2} \intd{} = \ar \notag\\ 
+  K_y = \intd{\dNdN{y}}  = r_2\tr{r_3} \intd{} = \ar \notag\\
+  \intertext{So}
+  \K = [r_2\tr{r_2} + r_3\tr{r_3}] \times \ar \label{eq:triK}
+\end{align}
+
+\subsubsection*{Calculate \K element by element}
+\newcommand{\globalK}[1]{
+  And its contribution to global stiffness matrix is
+\begin{align}
+  K_{#1,\text{global}} = \G{K.g.#1} \label{eq:K.g.#1}
+\end{align}
+}
+\newcommand{\rec}[1]{%
+  \paragraph{For element #1} applying \cref{eq:recK}
+  with $L_1 =
+  \G{l1.#1}, L_2 = \G{l2.#1}$ gives
+\begin{align}
+  K_{x,#1} &= \G{Kx.#1} \notag\\
+  K_{y,#1} &= \G{Ky.#1} \notag\\
+  K_{#1} &= \G{K.#1} \notag
+\end{align}
+\globalK{#1}
+}
+\newcommand{\tri}[1]{
+  \paragraph{For element #1} applying \cref{eq:triK} with
+  \begin{align*}
+    \A = \begin{bmatrix}
+      1 & x_1 & y_1 \\
+      1 & x_2 & y_2 \\
+      1 & x_3 & y_3 
+    \end{bmatrix} = \G{A.#1}
+  \end{align*} gives
+  \begin{align}
+    \B &= \A^{-1} = \G{B.#1} \notag\\
+    \K &= \left[
+         \G{B.r2.#1} \G{B.r2.t.#1}
+         +
+         \G{B.r3.#1} \G{B.r3.t.#1}
+         \right]
+         \G{Area.#1} \notag
+\end{align}
+\globalK{#1}
+}
+\rec{a}
+\rec{b}
+\tri{c}
+\tri{d}
+\tri{e}
+\tri{f}
+Now summing up \cref{eq:K.g.a,eq:K.g.b,eq:K.g.c,eq:K.g.d,eq:K.g.e,eq:K.g.f}
+gives the global stiffness matrix \K
+\begin{align}
+  K_{\text{global}} &=
+                      K_{a,\text{global}}
+                      \foreach \i in {b,c,d,e,f}{
+                      + 
+                      K_{\i,\text{global}}
+                      }\notag\\ 
+  &= \G{K.g}
+\end{align}
+
+To finish \cref{eq:fe}, we apply the BCs, which can be more or less translated
+into the following:
+\def\DOF{degree of freedom}
+\begin{quote}
+  On all nodes except for node 3 and 4,
+  the values of $\phi$ are known (so  \DOF{}$-7$). However, for each of these
+  node (7 nodes), a nonzero value of $b_i = \bi$ is added for them.
+\end{quote}
+So
+\def\au{\ensuremath{au_0}}
+\begin{align}
+  \mathbf{b} &=
+               \tr{\begin{bmatrix}
+                 b_1 & b_2 & 0&0&b_5&b_6&b_7&b_8&b_9
+               \end{bmatrix}}
+                                                  \notag\\
+  \intertext{And}
+  \mathbf{\phi}
+             &=
+                  \tr{\begin{bmatrix}
+                      b_1 & b_2 & 0&0&b_5&b_6&b_7&b_8&b_9
+                    \end{bmatrix}} \notag\\
+             &=
+               \tr{\begin{bmatrix}
+                   \phi_1 , \dotsc \phi_9
+                 \end{bmatrix}} \notag\\
+             &=
+               \tr{\begin{bmatrix}
+                   0&0&\phi_3&\phi_4&0&0&\au&\au&\au
+                 \end{bmatrix}}
+\end{align}
+So the system is therefore
+\def\bn{\ensuremath{
+    \begin{bmatrix}
+      b_1 \\ b_2 \\ 0 \\ 0 \\ b_5 \\ b_6 \\ b_7 \\ b_8 \\ b_9 
+    \end{bmatrix}}}
+\def\phin{\ensuremath{
+    \begin{bmatrix}
+      0\\0\\\phi_3\\\phi_4\\0\\0\\ \au \\ \au \\ \au
+    \end{bmatrix}}}
+\begin{align*}
+  \K \mathbf{\phi} = \mathbf{b} \notag\\
+  \G{K.g} \phin = \bn \notag
+\end{align*}
+We first solve for $\phi_2$ and $\phi_3$
+\def\one{\ensuremath{
+    \begin{bmatrix} 1\\1\\1
+    \end{bmatrix}}}
+\def\pp{\ensuremath{
+    \begin{bmatrix} \phi_3 \\ \phi_4
+    \end{bmatrix}}}
+\begin{align}
+  \G{K.g.sm} \phin &= \bn \notag\\
+  \G{K.g.m1} \pp &= - \G{K.g.m2} \one \au \notag\\
+  \G{K.g.m1}^{-1} \pp &= \G{K.g.mi.inv} \notag\\
+  -\au \G{K.g.m2} \one &= \au \G{K.g.m3} \notag\\
+  \pp &= \au \begin{bmatrix} \G{phi3}\\\G{phi4} \end{bmatrix} \notag
+\end{align}
+
+And now $\mathbf{b}$ can be calculated as
+\begin{align}
+  \mathbf{b} = \au \G{K.g}
+  \begin{bmatrix}
+    0\\0\\\G{phi3}\\\G{phi4}\\0\\0\\ \au \\ \au \\ \au
+  \end{bmatrix}
+  = \au \G{b.n}
+\end{align}
+
+\subsubsection*{Remarks}
+And the contour is shown below
+
+\input{p}
+
+We see that the value of $\phi$ gradually increase from bottom ($\phi=0$) to
+top ($\phi=1$). More elements shall be used for an increased accuracy.

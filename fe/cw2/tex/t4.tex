@@ -1,0 +1,56 @@
+The assigned parameters for Jianer are
+\begin{itemize}
+\item Geometry
+  \begin{description}
+  \item[{Bay Width}] 7m
+  \item[{Storey Height}] 4m
+  \end{description}
+\item Section Property
+  \begin{description}
+  \item[{Beams}] W30 \(\times\) 11
+  \item[{Columns}] HE600A
+  \end{description}
+\item Loading
+  \begin{description}
+  \item[{Dead}] 2.5 kPa
+  \item[{Live}] 3 kPa
+  \end{description}
+\end{itemize}
+\subsection*{Gravity load takedown}
+The total gravity load is calculated as
+\begin{align*}
+  F &= \text{area of each storey [m$^2$]} \times (\text{live + dead load [kPa]}) \times \text{number of storeys}\\
+  :&= Awn \text{[kN]}
+  \intertext{Where}
+  A &=
+      \text{Bay width} \times \text{number of bay in x-direction}
+      \times
+      \text{Bay width} \times \text{number of bay in y-direction}\\
+    &= 7 \times 6 \times 7 \times 4 = 1176 \text{m}^2 \\
+  w &= 2.5 + 3 = 5.5 \text{kPa}\\
+  n &= 5 \\
+  \intertext{Therefore}
+      F &= 1176 \times 5.5 \times 5 = 32340 \text{kN}
+\end{align*}
+The value from GSA is 32340 kN, which is the same.
+
+\subsection*{Eigenvalue analysis}
+The first three modes are presented below:
+\tcbset{graphics directory={img}}
+\begin{tcbraster}[raster columns=3,raster equal height,
+  drop fuzzy shadow]
+  \foreach \i in {1,2,3}{
+    \tcbincludegraphics{t4-mode\i.png}
+  }
+\end{tcbraster}
+We observe that
+\newcommand{\f}[4]{
+  The #1 mode is sway in #2-direction. This makes sense because the structure
+  is #3 in that direction which implies #4 lateral stability in that direction. 
+}
+\begin{itemize}
+\item \f{first}{y}{narrow}{weaker}
+\item \f{second}{x}{wide}{stronger}
+\item The third mode is less obvious, it seems to be a torsional deformation
+  along the z-axis.
+\end{itemize}

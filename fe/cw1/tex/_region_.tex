@@ -1,0 +1,226 @@
+\message{ !name(p2.tex)}
+\message{ !name(p2.tex) !offset(-2) }
+\newcommand{\dXX}[2][x]{
+  \ensuremath{\frac{\partial^2 #2}{\partial #1^2}}
+}
+\newcommand{\dX}[2][x]{
+  \ensuremath{\frac{\partial #2}{\partial #1}}
+}
+\newcommand{\dxx}[1]{\dXX{#1}}
+\newcommand{\dyy}[1]{\dXX[y]{#1}}
+\newcommand{\dx}[1]{\dX{#1}}
+\newcommand{\dy}[1]{\dX[y]{#1}}
+\newcommand{\phin}{\ensuremath{
+    \dX[\mathbf{n}]{\phi} 
+  }}
+\begin{questionbox}
+  The function $\phi(x,y)$ is governed by
+\begin{align}
+\dxx{\phi} + \dyy{\phi} = 0 \label{eq:poi}
+\end{align}
+The mesh is shown in the following figure:
+
+\input{img/mesh}
+
+\MySet{bd.col.1}{\mycola}
+\MySet{bd.col.2}{\mycolb}
+\MySet{bd.col.3}{\mycolc}
+\MySet{bd.col.4}{\mycola}
+\MySet{bd.col.5}{\mycolb}
+\foreach \n/\i in {
+  1/\mycola,
+  2/\mycolb,
+  3/\mycolc,
+  4/\mycola,
+  5/\mycolb}{
+  \MySet{bd.col.\n}{\i}
+}
+
+\newcommand{\bd}[1]{\bLabBox[\MyGet{bd.col.#1}]{#1}}
+\newcommand{\el}[1]{\nLabBox[\MyGet{el.col.#1}]{#1}}
+
+% \foreach \n/\i in {
+%   a/\mycola,
+%   b/\mycolb,
+%   c/\mycolc,
+%   d/\mycola,
+%   e/\mycolb,
+%   f/\mycolc}{
+%   \MySet{el.col.\n}{\i}
+% }
+% Don't know why it dosn't work   
+\MySet{el.col.a}{\mycola}
+\MySet{el.col.b}{\mycolb}
+\MySet{el.col.c}{\mycolc}
+\MySet{el.col.d}{\mycola}
+\MySet{el.col.e}{\mycolb}
+\MySet{el.col.f}{\mycolc}
+
+Where \bd{1} to \bd{5} are boundaries,
+and \el{a} to \el{f} are elements.
+
+And the BCs are:
+\def\f#1{\mbox{Along \bd{#1}: }}
+\begin{align}
+    \f{1} & \phin = 0 &  \f{2} & \phi = au_0 \notag\\
+    \f{3} & \phin = 0 & \f{4} & \phi = 0 \notag\\ 
+    \f{5} & \phi = 0 && \notag
+\end{align}
+\end{questionbox}
+
+\subsection*{Answer}\label{sec:q2}
+\subsubsection*{Weak formulation}
+Let $v$ be an arbitrary test function, the weak formulation of \cref{eq:poi} is
+then
+\newcommand{\inta}[1]{
+  \ensuremath{\int_{\text{Domain}} #1 \text{dA}}
+}
+\newcommand{\intb}[1]{
+  \ensuremath{\int_{\text{Boundary}} #1 \text{ds}}
+}
+
+\def\x{
+  \ensuremath{\inta{\nabla \phi \bullet \nabla v}}
+}
+\def\y{
+  \ensuremath{\intb{\phin v}}
+}
+
+
+\begin{align}
+  0 &= \inta{(\dxx{\phi} + \dyy{\phi}) v} \notag\\
+  \intertext{By Gauss-Green}
+    &= \inta{-\dx{\phi}\dx{v} - \dy{\phi}\dy{v}} +
+      \intb{
+      (\dx{\phi}\dx{n} + \dy{\phi}\dy{n})v
+      } \notag\\
+    &= -\x + \y \notag
+\end{align}
+Therefore,
+\begin{align}
+  \x &= \y \label{eq:tosub}
+\end{align}
+Now according to Galerkin's method, we take $v = \phi = N_j\phi_j$, which gives
+\begin{align}
+  \nabla v &= \nabla \phi = \nabla (N_i \phi_i) \notag\\
+           &= \sum_i \phi_i \nabla N_i \notag\\
+  &= \sum_i \phi_i
+    \begin{bmatrix}
+      \dx{N_i} \\ \dy{N_i}
+    \end{bmatrix} \notag
+\end{align}
+Therefore, substituting the above into \cref{eq:tosub} gives
+\def\x{\ensuremath{\inta{\nabla (N_i)\nabla (N_j)}}}
+\def\y{\ensuremath{\intb{\phin N_i}}}
+\begin{align}
+  \phi_i \inta{\nabla N_i \nabla N_j} \phi_j &= \intb{\phin N_j \phi_j} \notag\\
+  \phi_i K_{ij} \phi_j &= b_i \phi_i \notag\\
+  \intertext{Where}
+  K_{ij} &= \x = \inta{\dx{N_i}\dx{N_j} + \dy{N_x}\dy{N_j}} \notag\\
+  b_i &= \y \notag
+\end{align}
+Taking derivatives with respect to $\mathbf{\phi} = [\phi_1, \dotsc, \phi_n]$,
+and setting it to 0 gives the finite element equation
+\def\tr#1{\ensuremath{{#1}^{\text{T}}}}
+\def\p{\mathbf{\phi}}
+\begin{align}
+  \dX[\p]{\tr{\p} \mathbf{K} \p - \tr{\p}\mathbf{b}} &= 0 \quad \Rightarrow \quad
+                                                       \mathbf{K}\p = \mathbf{b}
+                                                       \label{eq:fe} \\
+  \intertext{Where}
+  \mathbf{K}_{ij} &= K_{ij} \quad \mathbf{b}_{i} &= b_i \notag
+\end{align}
+\def\K{\ensuremath{\mathbf{K}}}
+We calculate \K element by element. But before we start, we derive the general
+formulae that calculate the ``local stiffness matrix'' $K_{ij} = \x $ on a
+rectangular element and a triangular element.
+
+\subsubsection*{Local stiffness matrix for a rectangular element}
+For a rectangular element as shown below
+
+\begin{center}
+  \input{img/rec}
+\end{center}
+
+\newcommand{\shpf}{shape functions}
+The \shpf{} are
+\newcommand{\Ni}[1]{\ensuremath{N_i(x,y)}}
+\newcommand{\Nij}[2]{\dX[#2]{#1}}
+\def\g#1{\ensuremath{g_{#1}(y)}}
+\def\f#1{\ensuremath{f_{#1}(x)}}
+\newcommand{\vg}{
+  \begin{bmatrix}
+    \g2 \\ \g1
+  \end{bmatrix}
+}
+
+\begin{align}
+  \begin{bmatrix}
+    \Ni{4} & \Ni{3}\\
+    \Ni{1} & \Ni{2}
+  \end{bmatrix} &= \vg
+             \begin{bmatrix}
+               \f1 & \f2
+             \end{bmatrix} \notag\\
+  \intertext{Where}
+  \begin{bmatrix}
+    \f2\\ \f1
+  \end{bmatrix}
+           &=
+             \begin{bmatrix}
+               f_2\\f_1
+             \end{bmatrix}
+           =
+                  \begin{bmatrix}
+                    \frac{x}{L1} \\
+                    1 - \f2
+                  \end{bmatrix} \notag\\
+  \vg &=
+        \begin{bmatrix}
+          g_2\\g_1
+        \end{bmatrix}
+           =
+             \begin{bmatrix}
+               \frac{y}{L2} \\
+               1 - \g2
+             \end{bmatrix} \notag
+  \intertext{And their derivatives are}
+  \begin{bmatrix}
+    f_2' \\
+    f_1'
+  \end{bmatrix}
+           &=
+             \begin{bmatrix}
+               \frac{1}{L1}\\
+               - f_2'
+             \end{bmatrix} \notag\\
+  
+  \begin{bmatrix}
+    g_2' \\
+    g_1'
+  \end{bmatrix}
+           &=
+             \begin{bmatrix}
+               \frac{1}{L2}\\
+               - g_2'
+             \end{bmatrix} \label{eq:fgvals}
+\end{align}
+Note that we have arranged the \shpf{} such that their position on the matrix above
+are similar to their corresponding nodes on the figure above.
+
+Now we calculate \N{i}{x} and \N{i}{y}
+\newcommand{\Nx}{\ensuremath{\dx{\mathbf{N}}}}
+\newcommand{\Ny}{\ensuremath{\dy{\mathbf{N}}}}
+
+\def\x{
+  \ensuremath{\begin{bmatrix} g_2 \\ g_1 \end{bmatrix}}}
+\def\y{
+  \ensuremath{\begin{bmatrix} f_1 & f_2 \end{bmatrix}}}
+\begin{align}
+  \Nx &=
+        \begin{bmatrix}
+          \Nij{4}{x} & \Nij{3}{x} \\
+          \Nij{1}{x} & \Nij{2}{x} 
+        \end{bmatrix} = \x 
+\end{align}
+\message{ !name(p2.tex) !offset(-226) }

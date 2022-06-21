@@ -1,0 +1,52 @@
+\documentclass[fleqn,10pt,dvipsnames]{olplainarticle}
+% Use option lineno for line numbers 
+
+\title{Coursework 2, CEGE0038 Finite-Element Modelling and Numerical Methods}
+\graphicspath{ {./img/} }
+\author[1]{Jianer Cong}
+\usepackage{tikz}
+\usepackage{afterpage}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,raster}
+% \usepackage{multirow}
+
+\affil[1]{zcesjco@ucl.ac.uk}
+\keywords{GSA}
+\usepackage{cleveref}
+
+
+\newcommand{\mycola}{Blue}
+\newcommand{\mycolb}{Sepia}
+\newcommand{\mycolc}{OliveGreen}
+
+\newcommand{\cla}[1]{\textcolor{\mycola}{#1}}
+\newcommand{\clb}[1]{\textcolor{\mycolb}{#1}}
+\newcommand{\clc}[1]{\textcolor{\mycolc}{#1}}
+\newcommand{\cld}[1]{\textcolor{gray}{#1}}
+
+\begin{abstract}
+  This report presents the answers for the following four tasks:
+  Problem 1 on \cpageref{sec:p1},
+  Problem 2 on \cpageref{sec:p2}.
+  % Problem 3 on \cpageref{sec:p3}.
+  % Problem 4 on \cpageref{sec:p4}.
+\end{abstract}
+
+\newtcolorbox{questionbox}[1][]{
+  leftrule=3mm,title={Summary of Given Conditions},sharp corners=west,#1}
+
+\begin{document}
+\maketitle
+\input{data/kv}
+\input{data/out}
+\section*{Question 1:beam static}\label{sec:p1}
+% \input{tex/t1}
+\section*{Question 2:beam dynamics}\label{sec:p2}
+% \input{tex/t2}
+\section*{Question 3:plate beam statics}\label{sec:p3}
+% \input{tex/t3}
+\section*{Question 4:frame model for a multi-story building}\label{sec:p4}
+\input{tex/t4}
+
+
+\end{document}

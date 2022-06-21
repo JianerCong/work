@@ -1,0 +1,27 @@
+\message{ !name(flr.tex)}
+\message{ !name(flr.tex) !offset(148) }
+\begin{minipage}[l]{1.0\linewidth}
+        {\large The 9 \emph{actual load cases}}
+
+        \smallskip
+        After the 4 \emph{primative load cases} are input into the model. The 9
+        \emph{actual load cases} can be generated as follows:
+        \begin{enumerate}
+        \item $C_1$ no seismic force involved, only live load and dead load.
+        \item Group 1
+          \begin{itemize}
+          \item $C_2:= C_1 +L_1 + 0.3 L_2$
+          \item $C_3:= C_1 +L_1 - 0.3 L_2$
+          \item $C_4:= C_1 +0.3 L_1 + L_2$
+          \item $C_5:= C_1 +0.3 L_1 - L_2$
+          \end{itemize}
+        \item Group 2
+          \begin{itemize}
+          \item $C_6:= C_1 +L_3 + 0.3 L_4$
+          \item $C_7:= C_1 +L_3 - 0.3 L_4$
+          \item $C_8:= C_1 +0.3 L_3 + L_4$
+          \item $C_9:= C_1 +0.3 L_3 - L_4$
+          \end{itemize}
+        \end{enumerate}
+      \end{minipage}
+\message{ !name(flr.tex) !offset(-27) }

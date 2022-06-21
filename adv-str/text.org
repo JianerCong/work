@@ -1,0 +1,25 @@
+** Problem Statement
+
+** Methodology
+
+** Iteration
+
+** Dividing the Span
+
+** The three analysis set for us
+
+** The loads
+
+** The result diagram
+*** Stiffness
+
+*** Moment
+
+*** The bending-axial stress.
+    1. 
+    2. 
+
+** Summary 1. The Results
+
+** Summary 2. The API
+

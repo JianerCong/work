@@ -1,0 +1,8 @@
+*.pdf
+/run
+*.png
+
+.RData
+.Rhistory
+*.xlsx
+

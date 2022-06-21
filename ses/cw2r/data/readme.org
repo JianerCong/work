@@ -1,0 +1,67 @@
+** beam_flex.R
+*** ~check_ep_s(ep_cu, x, c, d)~
++ ep_cu :: the ɛ_cu
++ x :: the depth of neutral axis
++ c :: the cover in mm
++ d :: the beam depth
+** beam_flex.cpp
+*** ~get_real_A_s_mm2(A_sreq_mm2)~
+Get the real ~A_s_mm2~ from the required ~A_sreq_mm2~.
+Return a list of (A_s_mm2,n18,n14).
+*** ~find_x(A,B,E,f_cd,f_yd,co,ep_cu)~
+Find the neutral axis depth x by solving the quadratic equation.
++ A :: steel area in mm2
++ B :: breath in mm
++ E :: E for steel
++ co :: cover in mm
+
+  Return a list of (x, a, b ,c).Where ~a,b,c~ are the quadratic coefficients of
+  the equation.
+*** ~get_M_Rd~
+Calculate ~M_Rd~.
+** f.R
+*** ~check_smaller(x,y,nx,ny)~
+Compare x (named nx) should be smaller than y (named ny).
+* Todos
+** TODO Use regex to change ~1e3~ to ~1 \times 10^{3}~
+** TODO Add the Stage 2 lower half with gala
+* Old
+** DONE Do shear strength and confinement [2/2]
+*** DONE critical region [2/2]
+**** DONE text
+**** DONE code
+*** DONE non-critical region [2/2]
+**** DONE text
+**** DONE code
+** DONE Add xa [2/2]
+*** DONE in tex
+*** DONE in code
+**** DONE in list
+**** DONE write to
+** DONE Write data [3/3]
+*** DONE Format the data  
+*** DONE Change ~get_real_A_s_mm2~ signature
+to return the number of bars used.
+*** DONE Change ~find_x~ signature
+to return ~eqa~, ~eqb~, ~eqc~.
+
+** DONE Do beam local ductility check 
+** DONE Take note of the names
+** DONE Add ~MEdl~
+** DONE Get the core data out of beam_flex()
+So change ~beam_flex()~ to ~beam_flex(M_Ed_N_mm,d_mm, B_mm,c_mm)~
+*** TODO Change code
+*** TODO Change export list
+** TODO Do stage 3 [0/3]
+*** TODO recap latex table
+*** TODO tex
+*** TODO code
+** TODO Rename ~col_axial_ratio~ to just ~col_all~
+** TODO Column [1/3]
+*** DONE Stage 1
+*** TODO Stage 2
+**** TODO Get As,assumed
+**** TODO gala
+** DONE Add ~circ_area~ in ~mylib.R~
+** TODO ~cl.n18 |-> cl.barn~
+** TODO Parameterize ~cl.bard~

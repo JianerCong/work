@@ -1,0 +1,654 @@
+** Exam
+*** 2021
+**** q1
+#+begin_src R
+mw <- 8 * 1000 #kg
+f1 <- 1.3
+f2 <- 2.2
+mt <- mw/((f2/f1)^2 - 1)
+
+m1 <- mt+mw #when full
+m2 <- mt #when empty
+## ok <- f1^2*m1 - f2^2*m2
+
+## (a)
+k <- (2*pi*f1)^2*m1
+
+## (b)
+EI <- 35e6
+L <- (3*EI/k)^(1/3)
+
+## (c)
+p0=19e3
+f=1.25
+om=sqrt(k/m1)
+
+Om=2*pi*f
+be=Om/om
+mu=p0/k
+umax=0.2 #m
+xi=sqrt((mu/umax)^2 - (1-be^2)^2)/(2*be)
+
+#+end_src
+*** 2019
+**** Q2: 2DOF
+***** (a) natural frequency and mode shape [eigen]
+#+begin_src python
+  from sympy import *
+  m,k= symbols('m k')
+  M = m*diag(2,1)
+  M
+
+  k1=4*k
+  k2=2*k
+
+  K=Matrix([[k1+k2,-k2],[-k2,k2]])
+  K
+
+  A=(M**-1) * K
+  A.eigenvals() # natrual frequencies om^2
+
+  l=A.eigenvects() #mode shapes
+  om2 = diag(l[0][0],l[1][0])
+  shp = Matrix.hstack(l[0][2][0],l[1][2][0])
+
+  # check, should be 0
+  a = K * shp - M * shp * om2
+  a.simplify()
+  a
+
+  # l
+#+end_src
+***** (b) sine force steady state response
+#+begin_src python
+# Get the 2DOF periodic steady state response
+
+from sympy import *
+X=symbols('X')
+
+# mass: m1=a1*m, m2=a2*m
+a1=2
+a2=1
+
+# natural frequency om1^2=b1*om0^2, om2^2=b2*om0^2
+b1=1
+b2=4
+
+# stiffness k2=c2*k
+c2=2
+
+# -------------------------------------------------------
+c=1/(a1*a2*(X-b1)*(X-b2))
+
+u0=c*Matrix([
+    c2-a2*X,
+    c2
+])
+
+# u0 = [u1,u2] (multiply it by P0/k )
+u0
+#+end_src
+**** Q3: 3DOF
+***** (b) K, M, Rayleigh's quotient
+#+begin_src python
+# Rayleigh's quotient for natural frequency
+from sympy import *
+
+k0=symbols('k0')
+k0n=24 * 25e6 / (3**3)
+
+m0=25e3
+
+k1=3*k0
+k2=2*k0
+k3=k0
+
+# guessed mode shape
+phi=Matrix([1,2,3])
+
+# -------------------------------------
+K=Matrix([
+    [k1+k2,-k2,0],
+    [-k2,k2+k3,-k3],
+    [0,-k3,k3]
+          ])
+K
+
+M=m0*diag(1,1,1)
+M
+
+
+a= phi.T * K * phi
+b=phi.T * M * phi
+om2=a[0]/b[0]
+om2=om2.subs(k0,k0n)
+
+om=sqrt(om2)
+om
+#+end_src
+***** (c) Effective mass
+#+begin_src python
+# Effective mass
+from sympy import *
+
+m0=25 #tones
+
+phis= Matrix([1.0,2.29,3.92])
+M=m0 * diag(1,1,1)
+
+h=3
+hs=h*Matrix([1,2,3]) # height of each floor
+An=0.42*9.81
+
+Lt=hs.T * M * phis
+Lt=Lt[0]
+
+Lh=phis.T * M * ones(3,1)
+Lh=Lh[0]
+
+Mn=phis.T * M * phis #Mn
+Mn=Mn[0]
+
+
+Meff= 1e3*(Lh**2)/Mn                # effective mass (kg)
+Meff
+#+end_src
+***** (d) First modal base shear
+Continued from (c)
+#+begin_src python
+  heff=Lt/Lh                      # effective height
+  heff
+
+  Vb = Meff * An # modal base shear
+  Vb
+
+  Ga=Lh/Mn
+  Ga
+  T=0.327
+  om=2*pi/T
+
+  Dn=An/(om**2)
+
+  # displacement at each floor
+  u=Ga*phis*Dn
+  u.evalf()
+
+  heff * An * Meff
+
+  # ??? Q3 (d) moment 咋求 跳了
+  u11=u[0].evalf()
+  EI=3* 25e6 #Nm
+  k=24*EI/(l**3)
+  l=3 #m
+
+  u11 * l*k/4
+#+end_src
+**** Q4 
+***** (d) Central difference method (elasto-plastic + )
+#+begin_src R
+  ## 2019 Q4 (d)
+  library(tibble)
+
+  v. <- function(...) cat(gettextf(...),'\n')
+
+  dt=0.05 #s
+  m=80e3 #kg
+  c=0
+
+  u0=0
+  u0d=0
+
+  T=0.25 #the total period
+
+  ## the restoring force
+  k=15e3/5e-3
+  fs <- function(u){
+    min(u*k,15e3)
+  }
+  ## the applied force
+  p <- function(t){
+    20e3
+  }
+
+  ## --------------------------------------------------
+  n=T/dt #number of interval
+
+  tf=tibble(
+    t=seq(0,T,dt),
+    ps=p(t)
+  )
+
+
+  u0dd=(tf$ps[1]-c*u0-fs(u0))/m
+  u_1=u0 - dt* u0d + (dt)^2/2 * u0dd
+
+  A= m/(dt^2);B=c/(2*dt)
+  kh=A+B
+  a=A-B
+
+  v.('After initial calculation:\n\tA=m/(dt^2)=%g',A)
+
+  ## the u
+  u=rep(0,n+2)
+  pih=rep(0,n+1)
+  u[1]=u_1
+  u[2]=u0
+  for (i in 1:n){
+    pih[i]=tf$ps[i] - a*u[i] + 2*A*u[i+1] - fs(u[i+1])
+    u[i+2]=pih[i]/kh
+  }
+
+  tf$pih=pih
+  tf$u=u[2:(n+2)]
+
+#+end_src
+*** 2018
+**** Q1: 1DOF, find k, m, umax under sine force
+#+begin_src R
+source('dyn.R')
+
+L=40
+rho=2200
+d=10e-2
+b=4
+I=b*d^3/12
+E=30e9
+
+kb=48*E*I/L^3
+m_slab=b*d*L*rho
+
+## --------------------------------------------------
+## (b) find K, M
+fh=0.08
+fv=0.06
+fv2=0.055
+p2 <- function(x) (2*pi*x)^2
+ks=p2(fh)/2 * m_slab
+
+a=p2(fv) * m_slab
+kc=a*kb/(2*(kb-a))
+
+b=2*kb*kc/(kb+2*kc)
+m2=b/p2(fv2) - m_slab
+
+## --------------------------------------------------
+## (c) Find maximum deflection under sin force
+Om=2*pi     #the frequency for force
+om=2*pi*fv2 #the system natural frequency
+k=b         #the system k
+p0=m2 *9.81 #the applied force magnitude
+xi=0.07     #xi = 7%
+umax <- dyn_get_max_dlf(Om,om,k,p0,xi)
+
+#+end_src
+**** Q2: 2DOF:  eigen om, check ortho
+#+begin_src python
+from sympy import *
+
+# CAUTION: use Integer() or Rational() to init to avoid roundoff error
+m=Integer(100e3) #kg
+M = m*diag(1,1);M
+
+h=3 #m
+EI=15e6
+k =Rational(24*EI,h**3);k
+
+k1=3*k
+k2=k
+
+K=Matrix([[k1+k2,-k2],[-k2,k2]]);K
+A=(M**-1)*K;A
+
+A.eigenvals() # natrual frequencies om^2
+
+l=A.eigenvects() #mode shapes
+om2 = diag(l[0][0],l[1][0])
+shp = Matrix.hstack(l[0][2][0],l[1][2][0])
+l
+
+# the om
+(om2 ** (1/2)).evalf()
+
+# should be 0
+a = K * shp - M * shp * om2
+a.simplify()
+a
+
+# mode shapes
+shp.evalf() #[phi1 phi2]
+
+# natural circular frequencies
+(om2*m/k).evalf()
+
+# Verify the orthogonality
+KK = shp.T * K * shp
+KK.simplify()
+MM = shp.T * M * shp
+MM.simplify()
+KK # should be diagonal
+#+end_src
+**** Q3: 3DOF: three base shear: Rayleigh's + three modal base shear
+#+begin_src python
+from sympy import *
+
+EI=Integer(20e6) #Nm2
+h=Integer(4)
+m0=Integer(30e3) #kg
+
+M=m0*diag(2,2,1)
+
+k0=EI/(h**3)
+k1=18
+k2=48
+k3=24
+
+# -------------------------------------
+K=k0*Matrix([
+    [k1+k2,-k2,0],
+    [-k2,k2+k3,-k3],
+    [0,-k3,k3]
+          ])
+K
+
+# Rayleigh's quotient 
+phi = Matrix([1,1.248,1.429])
+a= phi.T * K * phi
+b=phi.T * M * phi
+om2=a[0]/b[0]
+print('a is %g, b is %g, om2 is %g, om is %g' % (a[0].evalf(3),
+                                                 b[0].evalf(3),
+                                                 om2.evalf(3),
+                                                 sqrt(om2).evalf(3)
+                                                 ))
+
+# (c) calculate three base shear
+
+phis= Matrix([
+    [1,1,1],
+    [1.248,0.242,-1.24],
+    [1.429,-1.822,0.768]
+])
+
+import numpy as np
+from numpy import array
+def to_a(x):
+    return array(x,dtype=float)
+
+Lh=phis.T * M * ones(3,1);Lh
+# turn to numpy
+Lh2 = to_a([x.evalf()**2 for x in Lh])
+Lh2
+
+Mn=phis.T * M * phis #Mn
+Mn=to_a(Matrix.diagonal(Mn)) #get the diagonal elements
+Mn=Mn.flatten()
+
+Meff= Lh2/Mn               # effective mass (kg)
+Meff
+
+om=to_a([5.625,16.83,25.57])
+T = 2*np.pi / om;T #period
+
+An=9.81* to_a([0.4,0.65,0.7])              # 读表
+Vb = Meff * An # modal base shear (N)
+Vb # three modal base shear
+#+end_src
+*** 2017
+**** Q1 2DOF
+***** (a),(b),(c) eigen: natural freq + mode shape + check ortho
+#+begin_src python
+from sympy import *
+m,k= symbols('m k')
+M = m*diag(2,1)
+M
+
+# k = 24EI/h1^3
+k1=k
+k2=8*k
+
+K=Matrix([[k1+k2,-k2],[-k2,k2]])
+K
+
+A=(M**-1)*K
+A.eigenvals() # natrual frequencies om^2
+
+l=A.eigenvects() #mode shapes
+om2 = diag(l[0][0],l[1][0])
+shp = Matrix.hstack(l[0][2][0],l[1][2][0])
+l
+
+# should be 0
+a = K * shp - M * shp * om2
+a.simplify()
+a
+
+# mode shapes
+shp.evalf() #[phi1 phi2]
+
+# natural circular frequencies
+(om2*m/k).evalf()
+
+# Verify the orthogonality
+KK = shp.T * K * shp
+KK.simplify()
+MM = shp.T * M * shp
+MM.simplify()
+print('Is K diagonal? :',KK.is_diagonal())
+print('Is M diagonal? :',MM.is_diagonal())
+
+#+end_src
+***** (d) Solve init value problem
+#+begin_src python
+# For the 2 DOF system, solve the initial value problem
+# the general solution is
+# u(t) = [u1,u2]
+# = (Acw1t + Bsw1t)[v11,v12]
+# + (Ccw2t + Dsw2t)[v21,v22]
+
+# Where v11, v12 are the mode shape for mode 1
+# v21, v22 are the mode shape for mode 2
+
+from sympy import *
+
+# the initial conditions
+I,M = symbols('I M')
+u0=Matrix([0,0])
+ud0=Matrix([0,I/M])
+
+# --------------------------------------------------
+v11,v12,v21,v22 = symbols('v(1:3)(1:3)')
+om1,om2 = symbols('omega1:3')
+
+Phi = Matrix([[v11,v21],[v12,v22]])
+Phi
+
+Om = diag(om1,om2)
+
+
+A = diag(Phi, Phi*Om)
+V = Matrix.vstack(u0,ud0)
+
+# A,C,B,D
+(A**-1) * V
+#+end_src
+**** Q3 3DOF
+***** (a) (i) get K
+#+begin_src python
+from sympy import *
+
+EI=20e6 #Nm2
+
+
+def get_k(EI,h):
+    return 24*EI/(h**3)
+
+k1=get_k(EI=2*EI,h=4)
+k2=get_k(EI=2*EI,h=3)
+k3=get_k(EI=EI,h=3)
+
+# -------------------------------------
+K=Matrix([
+    [k1+k2,-k2,0],
+    [-k2,k2+k3,-k3],
+    [0,-k3,k3]
+          ])
+K*1e-6 # MN/m
+#+end_src
+***** (a) (ii) effective mass and base shear
+#+begin_src python
+  from sympy import *
+
+  phis= Matrix([1.0,1.283,1.49])
+  m0=30e3
+  M=m0*diag(1,1,0.5)
+  M
+
+
+  Lh=phis.T * M * ones(3,1)
+  Lh=Lh[0]
+
+  Mn=phis.T * M * phis #Mn
+  Mn=Mn[0]
+
+  Meff= (Lh**2)/Mn                # effective mass (kg)
+  x=Meff/sum(M)
+  x=x.evalf(2)
+  print('The mass participation factor is %g%% , the Meff is %g'% (100 * x,Meff.evalf(3)))
+
+
+  An=0.9*9.81                     # 读表
+  Vb = Meff * An # modal base shear (N)
+  Vb 
+#+end_src
+***** (b) (ii) elastic-perfectly plastic diagram
+#+begin_src python
+from math import sqrt
+
+F=10e3 #N
+u1=3.2e-3 #m
+u2=4.8e-3
+
+k=F/u1
+m=80e3 #kg
+om=sqrt(k/m)
+
+E=F * (u2 - u1)
+print('om is %g, k is %g N/m, energy dissipated is %g J, ductility is %g' % (om,k,E, u2/u1))
+#+end_src
+** Book
+*** Central-difference
+#+begin_src R
+library(tibble)
+
+dt=0.1
+m=0.2533
+c=0.1592
+k=10
+u0=0
+u0d=0
+
+T=1 #the total period
+
+## the restoring force
+fs <- function(u) k*u
+## the applied force
+p <- function(t){
+    10 * sin(pi * t /0.6) * (t < 0.6)
+    ## It's zero if t >=0.6
+}
+
+## --------------------------------------------------
+n=T/dt #number of interval
+
+tf=tibble(
+  t=0:n/n,
+  ps=p(t)
+)
+
+
+u0dd=(tf$ps[1]-c*u0-k*u0)/m
+u_1=u0 - dt* u0d + (dt)^2/2 * u0dd
+
+A= m/(dt^2);B=c/(2*dt)
+kh=A+B
+a=A-B
+b=k-2*A
+
+## the u
+u=rep(0,n+2)
+pih=rep(0,n+1)
+u[1]=u_1
+u[2]=u0
+for (i in 1:n){
+  pih[i]=tf$ps[i] - a*u[i] + 2*A*u[i+1] - fs(u[i+1])
+  u[i+2]=pih[i]/kh
+}
+
+tf$pih=pih
+tf$u=u[2:(n+2)]
+
+#+end_src
+** T2: forced vibration
+*** q1
+#+begin_src R
+  # Tut2 q1
+  L=2
+  xi=0.05
+  EI=500e3
+  g=9.81
+  Om=30
+  p0=1.2e3 #N
+  W=20e3 #N
+
+
+  m=W/g
+  k=9*EI/(4*L^3)
+  om=sqrt(k/m)
+
+
+
+  source('dyn.R')
+  umax <- dyn_get_max_dlf(Om,om,k,p0,xi)
+#+end_src
+*** q2
+#+begin_src R
+EI=40e6 #Nm2
+M=6000 #kg
+L=3
+
+k=3*EI/L^3
+om = sqrt(k/M)
+
+source('dyn.R')
+Om=800*pi/60 #rad/sec
+xi=0.1
+p0=64e3
+
+umax <- dyn_get_max_dlf(Om,om,k,p0,xi)
+
+#+end_src
+*** q4 convolution
+#+begin_src python
+# T2 q4 convolution
+from sympy import *
+om,t,ta,a,F0,t0= symbols('omega t tau a F0 t0', positive=True)
+h=a*sin(om*t)
+
+F1=F0*t/t0                      # F before t0
+e1 = F1.subs(t,ta) * h.subs(t,t-ta)
+i = integrate(e1,(ta,0,t))
+mu1=i.simplify()                  # response when t < t0
+
+F2=F0                          # F after t0
+e2 = F0 * h.subs(t,t-ta)
+i1 = integrate(e1,(ta,0,t0))    # Caution: 你得从新integrate一次 e1
+i2 = integrate(e2,(ta,t0,t))
+i = i1+i2
+mu2 = i.simplify()              # response when t >= t0
+
+#+end_src
+* End
+
+# Local Variables:
+# org-what-lang-is-for: "python"
+# End:

@@ -1,0 +1,204 @@
+\subsection{Flexural Design of the Beam}
+By assuming that the depth of neutral axis $x_{\mbox{assumed}} = 0.25d = 0.25
+\times \g{d} = \g{xa}$, for the required steel area $A_{s,required}$, we have
+\footnote{We have assumed that compression steel and tensile steel have the same area.}:
+\begin{align*}
+  A_{s,required} &= \frac{M_{Ed}}{f_{yd}0.9d}
+                   =  \frac{\g{MEd}}{\g{fyd} \times 0.9  \times \g{d}}
+                   = \g{Asr} \mbox{mm}^{2}
+\end{align*}
+
+Therefore, we can use \g{n14} 14mm-diamter bars and \g{n18}
+18mm-diameter bars, which gives an $A_{s} = \g{As}$ mm $^{2}$. Solving the
+following quadratic equation we can get the neutral axis $x$:
+
+\begin{align*}
+  a x^{2} + b x + c &= 0 \\
+  \\[-1cm]               %remove the extra spacing
+  \intertext{Where}
+  \\[-1cm]               %remove the extra spacing
+  a &= 0.8Bf_{cd}
+      = 0.8 \times \g{b}\mbox{mm} \times \g{fcd} \mbox{Nmm}^{-2} \\
+                    &= \g{qea} \mbox{Nmm}^{-1}\\
+  b &= A_{s} (E_{s} \epsilon_{cu} - f_{yd})
+      = \g{As}\mbox{mm}^{2} (\g{Es}\mbox{Nmm}^{-2}
+      \times
+      \g{epcu} - \g{fyd}\mbox{Nmm}^{-2}) \\
+                    &= \g{qeb} \mbox{N}\\
+  c &= - A_{s} E_{s} \epsilon_{cu} c
+      = \g{As} \mbox{mm}^{2} \times \g{Es} \mbox{Nmm}^{-2}
+      \times \g{epcu} \times \g{c} \mbox{mm} \\
+                    &= \g{qec} \mbox{Nmm}\\
+  \\[-1cm]               %remove the extra spacing
+  \intertext{Therefore}
+  \\[-1cm]               %remove the extra spacing
+  x &= \g{x} \mbox{mm}
+\end{align*}
+
+Checking the compressive and tensile steel strain assumption:
+\begin{align*}
+  \epsilon_{s} &= \frac{\epsilon_{cu}}{x} (d - x) 
+               =  \frac{\g{epcu}}{\g{x}\mbox{mm}} 
+                 \times (\g{d} \mbox{mm} - \g{x} \mbox{mm})
+                 = \g{eps}
+               > \epsilon_{sy} = 0.0021 \mbox{(verified)} \\
+  \epsilon_{s}' &= \frac{\epsilon_{cu}}{x} \times (x - c) 
+               = \frac{\g{epcu}}{\g{x}\mbox{mm}} \times
+                  (\g{x}\mbox{mm} - \g{c}\mbox{mm})
+                  = \g{epsp}
+                  < \epsilon_{sy} = 0.0021 \mbox{(verified)}
+\end{align*}
+
+So $M_{Rd}$ is
+\begin{align*}
+  M_{Rd} &= A_{s} (f_{yd} (d - 0.4 x) +
+           E_{s} \epsilon_{cu} \frac{x-c}{x} (0.4x - c)) \\
+         &=
+           \g{As} \mbox{mm}^{2}(
+           \g{fyd} \mbox{Nmm}^{-2}
+           (\g{d} \mbox{mm} - 0.4 \times \g{x}\mbox{mm}) \\
+           &+
+           (
+           \g{Es} \mbox{Nmm}^{-2} \times \g{epcu}
+           \frac{\g{x} \mbox{mm}- \g{c} \mbox{mm}}
+           {\g{x} \mbox{mm}}
+           (0.4 \times \g{x} \mbox{mm} - \g{c} \mbox{mm})
+           )) \\
+  &= \g{MRd} \mbox{Nmm}
+\end{align*}
+So we have
+\begin{align*}
+  M_{Rd} &= \g{MRd} > M_{Ed}^{+} = \g{MEd} \mbox{Nmm}\\
+  M_{Rd} &= \g{MRd} > M_{Ed}^{-} = \g{MEdl} \mbox{Nmm}
+\end{align*}
+\subsection{Beam Local Ductility Check}
+\subsubsection{Ratio of compressive reinforcement}
+The ratio of compressive reinforcement $\frac{A_{s}'}{A_{s}}$ should be greater
+than 0.5. However, this can be skipped since \(A_{s} = A_{s}'\).
+
+\subsubsection{Check $\rho < \rho_{\max}$}
+Next is to verify that
+\begin{align*}
+  \rho &< \rho_{\max} := \rho' +
+         \frac{0.0018f_{cd}}{\mu_{\phi}\epsilon_{sy}f_{yd}}\\
+  \\[-1cm]               %remove the extra spacing
+  \intertext{Where}
+  \\[-1cm]               %remove the extra spacing
+  \mu_{\phi} &=
+               \begin{cases}
+                 2q_{0} - 1 & \text{if } T_1 \geq T_{C} \\
+                 1 + 2(q_{0} - 1)\frac{T_c}{T_1} & \text{if } T_{1} < T_{C}
+               \end{cases}
+\end{align*}
+However, this check can also be skipped, because $A_s = A_s'$ so $\rho = \rho'$,
+and $\rho_{\max}$ is $\rho'$ plus something, namely
+$\frac{0.0018f_{cd}}{\mu_{\phi}\epsilon_{sy}f_{yd}}$, let's denote it by $k$.
+However, we observe that according to \S EC-8 5.2.2.2, for \emph{multistorey,
+  multibay frame building} with DCH, $q_0 = 4.5 \times \frac{\alpha_u}{\alpha_1}
+= 4.5 \times 1.3 = 5.85$. This implies that both $2q_0-1$ and
+$1+2(q_0-1)\frac{T_c}{T_1}$ are positive, which implies that $\mu_{\phi}$ is
+always positive no matter whether $T_1 \geq T_c$ or $T_1 < T_c$, so $k$ is
+always positive, so $\rho_{\max} = \rho + k$ is always greater than $\rho$. (i.e
+This check can be skipped.)
+
+\subsubsection{Check $\rho > \rho_{\min}$}
+Now we calculate $\rho = \frac{A_s}{bd} = \frac{
+  \g{As}}{\g{b} \times \g{d}} = \g{rho}$ and $\rho_{\min}$ can
+be calculated as:
+\begin{align*}
+  \rho_{\min} &= 0.5 \frac{f_{ctm}}{f_{yk}} \\
+  \\[-1cm]               %remove the extra spacing
+  \intertext{Where}
+  \\[-1cm]               %remove the extra spacing 
+  f_{ctm} &= 0.3 \times f_{ck}^{\frac{2}{3}} \\
+  \\[-1cm]               %remove the extra spacing
+  \intertext{Therefore}
+  \\[-1cm]               %remove the extra spacing
+  \rho_{\min} &= 0.5 \frac{0.3 \times 25 ^{\frac{2}{3}}}{500} = 0.0026 < \rho
+                \mbox{(verified)}
+\end{align*}
+\subsection{Shear Strength and Confinement}
+
+\subsubsection{Critical region}
+\begin{enumerate}
+\item Set $V_{Rd,s} = V_{Ed} = \g{VEd}$ kN.
+\item Assuming using a 2-leg hoop with size \g{dh} mm. For the critical
+  region, we assume that $\theta = 45 ^{\circ}$ and $\alpha = 90 ^{\circ}$ (i.e.
+  the traverse reinforcement (hoops) is vertical).
+  \begin{align*}
+    s_{required} &= 0.9d \frac{A_{sw}}{V_{Ed}} f_{yd}
+                   (\cot \theta + \cot \alpha)\sin \alpha \\
+                 &= 0.9d \frac{A_{sw}}{V_{Ed}} f_{yd} (1 + 0) \times 1\\
+                 &= 0.9 \times \g{d} \mbox{mm}
+                   \times
+                   \frac{\g{Asw}\mbox{mm}^{2}}{\g{VEd} \mbox{kN}}
+                   \times \g{fyd} \mbox{Nmm}^{-2} \\
+                 &= \g{sreq} \mbox{mm}
+  \end{align*}
+\item According to \S EC-8 5.4.3.1.2 (6)(b) $s$ should not exceed
+  \begin{align*}
+    s_{\max} &= \min \{ \frac{h_{beam}}{4}, 24\phi_{sw},
+               225\mbox{mm}, 8\phi_{long} \} \\
+             &= \min \{ \frac{500}{4} \mbox{mm}, 24 \times \g{dh} \mbox{mm},
+               225\mbox{mm}, 8 \times 14 \mbox{mm}\} \\
+             &= \g{smax}
+               \mbox{mm} > s_{required} = \g{sreq} \mbox{mm (Verified)} \\
+  \end{align*}
+\item To make the spacing practical, we set $s_{actual} = \g{sact}$ mm, and
+  the corresponding $V_{Rd, s, actual} $ is
+\begin{align*}
+  V_{Rd, s, actual}&= 0.9d \frac{A_{sw}}{s_{actual}}f_{yd}\cot  \theta \\
+  &= 0.9 \times \g{d} \mbox{mm}
+  \times \frac{\g{Asw} \mbox{mm}^{2}}{\g{sact} \mbox{mm}}
+  \times \g{fyd} \mbox{Nmm}^{-2} \times 1 \\
+  &= \g{VRdsAct} \mbox{kN}
+\end{align*}
+  which is greater than $V_{Ed} = \g{VEd} $kN (verified).
+\end{enumerate}
+
+\subsubsection{Non-Critical Region}
+For the non-critical region we assume the following:
+\begin{itemize}
+\item The struct angle $\theta = 21.8^{\circ}$.
+\item The design shear force is same as the critical region: $V_{Ed} =
+  \g{VEd}$ kN.
+\end{itemize}
+It is also assumed that the hoops are the same as the critical region, therefore
+we have
+\begin{align*}
+                 s_{required} &= 0.9d \frac{A_{sw}}{V_{Ed}} f_{yd}
+                                (\cot \theta + \cot \alpha)\sin \alpha \\
+                              &= 0.9d \frac{A_{sw}}{V_{Ed}} f_{yd} (\cot 21.8^{\circ} +
+                                \cot 90 ^{\circ}) \times \sin 90^{\circ}\\
+               &= 0.9 \times \g{d} \mbox{mm}
+                 \times
+                 \frac{\g{Asw}\mbox{mm}^{2}}{\g{VEd} \mbox{kN}}
+                 \times \g{fyd} \mbox{Nmm}^{-2}  \times (2.5 + 0) \times 1\\
+               &= \g{sreqn} \mbox{mm}
+\end{align*}
+
+When considering the non-critical regions, the requirements to be followed are
+from EC2 rather than EC8 in terms of spacing and minimum required amount.
+
+According to \S EC2 9.2.2:
+\begin{enumerate}
+\item $s$ should be smaller than $s_{\max} := \frac{0.75d}{1+\cot\alpha} =
+  0.75 \times \g{d} = \g{smaxn} > s_{required}$ (satisfied)
+\item the ratio of shear reinforcement ($\rho_w = \frac{A_{sw}}{sb \sin
+    \alpha}$) in the non-critical regions should be greater than
+\begin{align*}
+  \rho_{w,\min} &= \frac{0.08 \sqrt{f_{ck}}}{f_{yk}} = 0.00084 \\
+  \rho_w &= \g{rho} > \rho_{w,\min} = 0.00084 \mbox{(satisfied)}
+\end{align*}
+\item The spacing \g{sreqn} mm is not pratical. For a practical spacing, we
+  set $s_{actual} = \g{sactn}$ mm, and the corresponding $V_{Rd, s, actual}$
+  is
+\begin{align*}
+  V_{Rd, s, actual} &= 0.9d \frac{A_{sw}}{s_{actual}}f_{yd}\cot  21.8 ^{\circ} \\
+                    &= 0.9 \times \g{d} \mbox{mm} \times \frac{\g{Asw}
+                      \mbox{mm}^{2}}{\g{sactn} \mbox{mm}}
+                      \times \g{fyd} \mbox{Nmm}^{-2} \times 2.5 \\
+                    &= \g{VRdsActn} \mbox{kN}
+\end{align*}
+  which is greater than $V_{Ed} = \g{VEd}$kN (verified).
+\end{enumerate}

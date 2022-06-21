@@ -1,0 +1,29 @@
+\documentclass[border=0.2cm,dvipsnames]{standalone}
+\title{force}
+\author{Jianer Cong}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usetikzlibrary{shapes} % ellispe node shape
+\usetikzlibrary{shapes.multipart} % ellispe node shape
+\usetikzlibrary{arrows.meta}    %-o arrow head
+\usetikzlibrary{arrows}
+\usetikzlibrary{matrix} % Use the ``matrix of node'' option and the auto-cell numbering
+
+\newcommand{\mycola}{MidnightBlue}
+\newcommand{\mycolb}{Mahogany}
+\newcommand{\mycolc}{OliveGreen}
+
+\newcommand{\cola}[1][]{\textcolor{\mycola}{#1}}
+\newcommand{\colb}[1][]{\textcolor{\mycolb}{#1}}
+\newcommand{\colc}[1][]{\textcolor{\mycolc}{#1}}
+
+
+% arrow drawing functions
+\newcommand\uptodown[2][]{\draw[very thick,->](#1.south) to [out=270,in=90] (#2.north);}
+\newcommand\Uptodown[2][]{\uptodown[#1]{#2}}
+\newcommand\sdown[2][]{\uptodown[#1]{#2}} %Straight down
+\def\myem{ }
+
+\begin{document}
+\input{d}
+\end{document}

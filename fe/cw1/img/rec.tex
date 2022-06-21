@@ -1,0 +1,32 @@
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \begin{scope}[very thick]
+    \draw (0,0) node[above right] (n1) {1}
+    --  +(5,0) node[above right] (n2) {2}
+    -- +(5,3) node[above right] (n3) {3}
+    -- +(0,3) node[above right] (n4) {4}
+    -- cycle;
+
+    \foreach \i in {1,2,3,4}{
+      % \node[fill=#2,]
+      \fill[black] (n\i.south west) circle (3pt);
+    }
+
+    \newdimen\h
+    \h=3.5pt
+    % Draw the two dimensions
+    \def\i{0.5cm}
+    \def\j{5cm}
+
+    \draw[thin,<->] (0,-\i) to node[anchor=north] {$L_1$} +(\j,0);
+    \draw (0,-\i) -- +(0,\h) -- +(0, -\h)
+    (\j,-\i) -- +(0,\h) -- +(0, -\h);
+
+    % y dimensions
+    \newcommand{\mydimy}[4]{%
+      \draw[thin,<->] (#1,#2) to node[left] {#4} +(0,#3);
+      \draw (#1,#2) -- +(-\h,0) -- +(\h,0)
+      (#1,#2 + #3) --  +(-\h,0) -- +(\h,0);
+    }
+    \mydimy{-0.5cm}{0}{3}{$L_{2}$}
+  \end{scope}
+\end{tikzpicture}

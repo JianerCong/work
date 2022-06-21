@@ -1,0 +1,14 @@
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \begin{scope}
+    \draw (0,0) coordinate (n1)
+    --  +(4,-1) coordinate (n2) 
+    -- +(3,2) coordinate (n3)
+    -- cycle;
+
+    \foreach \i/\p in {1/above left,2/below right,
+      3/above left}{
+      \node[\p] at (n\i) {$(x_{\i}, y_{\i})$};
+      \fill[black] (n\i) circle (3pt);
+    }
+  \end{scope}
+\end{tikzpicture}

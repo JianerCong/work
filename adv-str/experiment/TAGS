@@ -1,0 +1,48 @@
+
+m.cs,1729
+﻿using System;1,0
+using System.IO;IO2,18
+using System.Linq;Linq3,36
+using System.Collections.Generic;Generic4,56
+using Testing;5,91
+using MathNet.Numerics.Interpolation;Interpolation6,107
+namespace top_v19,150
+    class Program11,171
+        static void Main(13,197
+    static class Util{Util52,1332
+        public static double EnsurePositive(53,1356
+    class BMData 61,1640
+        BMPoint[] rows;62,1673
+        string[] headings;63,1698
+        public BMData(64,1726
+        void getRowsFromText(78,2301
+        void getBMLabFromThisRow(89,2718
+        void getHeadings(97,3011
+        void getTextOfRows(104,3276
+        public void getTheBM(116,3667
+        public static void Test(126,4207
+    class BMSection{BMSection147,4964
+        LinearSpline l;148,4986
+        double maxM;149,5011
+        double minM;150,5033
+        readonly string Name;151,5055
+        public BMSection(156,5286
+        public double GetBFromM(169,5734
+        public static void Test(181,6157
+    class DummyIBMgettable:DummyIBMgettable198,7037
+        public void getTheBM(199,7079
+    class AnalysisSet{AnalysisSet213,7553
+        BMSection HoggingBM;214,7577
+        BMSection SaggingBM;215,7607
+        string name;216,7637
+        public AnalysisSet(218,7661
+        public void FindBForThisM(225,7966
+        public static void Test(236,8425
+        class AnalysisTask 265,9529
+            AnalysisSet boss;266,9559
+            double udl_Nm_1;267,9590
+            public readonly string name;268,9620
+            IStructuralAnalyzable analyst;269,9662
+            public AnalysisTask(271,9708
+            public override string ToString(280,10073
+            void Init(289,10436

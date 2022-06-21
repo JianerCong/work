@@ -1,0 +1,18 @@
+* Before arrival [40%]
+** TODO finish passenger form 48 hrs before travels
+https://www.gov.uk/provide-journey-contact-details-before-travel-uk
+** DONE book day2,8 test
+** DONE a test to be taken in the 3 days before traval
+*** Where ?
+
+1. 北京医院 :: 7.1km
+2. 北京清华长庚医院 :: 12.5km
+3. 北京和睦家医院 :: 8.5km
+4. 北京博奥医学检验所 :: 22.5km
+5. 北京世纪坛医院医学检验科 :: 9.2km
+** TODO Amazon Buy [1/2]
+*** DONE Add to basket
+*** TODO But
+* After arrival
+** 10 days quarantine
+** take the booked day2,8 test.

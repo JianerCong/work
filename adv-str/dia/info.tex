@@ -1,0 +1,105 @@
+% \begin{tikzpicture}[edge from parent fork left]
+%   \tikzstyle{every node}=[fill=red!30,rounded corners]
+%   \tikzstyle{edge from parent}=[red,-o,thick,draw]
+%   \node {root}
+%   child {node {left}}
+%   child {node {right}
+%     child {node {child}}
+%     child {node {child}}
+%   };
+% \end{tikzpicture}
+
+% \begin{tikzpicture}
+%   [parent anchor=east,child anchor=west,grow=south]
+%   % \tikzstyle{every node}=[ball color=red,circle,text=white]
+%   \tikzstyle{edge from parent}=[draw,dashed,thick,red]
+%   \node {root}
+%   child {node {left}}
+%   child {node {right}
+%     child {node {child}}
+%     child {node {child}}
+%   };
+%   \draw[style=help lines] (0cm,0cm) grid +(10cm,-10cm);
+% \end{tikzpicture}
+
+% \begin{tikzpicture}[->]
+%   \draw (0,0) -- (xyz cs:x=1);
+%   \draw (0,0) -- (xyz cs:y=1);
+%   \draw (0,0) -- (xyz cs:z=1);
+% \end{tikzpicture}
+
+% \begin{tikzpicture}[->]
+%   \draw (0,0) -- (1,0);
+%   \draw (0,0) -- (0,1,0);
+%   \draw (0,0) -- (0,0,1);
+% \end{tikzpicture}
+
+% The Node coordinates:
+
+% \begin{tikzpicture}
+%   \node (shape) at (0,2) [draw] {|class Shape|};
+%   \node (rect) at (-2,0) [draw] {|class Rectangle|};
+%   \node (circle) at (2,0) [draw] {|class Circle|};
+%   \node (ellipse) at (6,0) [draw] {|class Ellipse|};
+%   \draw (node cs:name=circle,anchor=north) |- (0,1);
+%   \draw (node cs:name=ellipse,anchor=north) |- (0,1);
+%   \draw[-open triangle 90] (node cs:name=rect,anchor=north)
+%   |- (0,1) -| (node cs:name=shape,anchor=south);
+% \end{tikzpicture}
+
+
+
+\begin{tikzpicture}
+
+  % \draw[style=help lines] (0cm,0cm) grid +(10cm,-20cm);
+
+%{{{ nodes
+
+  \node (root)  at (0,0)       [draw]       {Beam};
+  \node (n1)    at ([xshift=1cm, yshift=-1cm] node cs:name = root, anchor=south) [right]      {L = 8 (m)};
+  \node (n2)    at ([xshift=1cm, yshift=-2cm] node cs:name = root, anchor=south) [right,draw] {end\_condition = ``both ends fixed''};
+
+  \node (n3)    at ([xshift=1cm, yshift=-3cm] node cs:name = root, anchor=south)  [right,draw] {section};
+  \node (n31)   at ([xshift=2cm, yshift=-4cm] node cs:name = root, anchor=south)  [right     ] {d = 450 (mm)};
+  \node (n32)   at ([xshift=2cm, yshift=-5cm] node cs:name = root, anchor=south)  [right     ] {b = 200 (mm)};
+  \node (n33)   at ([xshift=2cm, yshift=-6cm] node cs:name = root, anchor=south) [right,draw] {rebar};
+  \node (n331)  at ([xshift=3cm, yshift=-7cm] node cs:name = root, anchor=south) [right     ] {center\_to\_cover = 50 (mm)};
+  \node (n332)  at ([xshift=3cm, yshift=-8cm] node cs:name = root, anchor=south) [right     ] {radius = if ``hogging'' 25 else 20 (mm)};
+  \node (n333)  at ([xshift=3cm, yshift=-9cm] node cs:name = root, anchor=south) [right,draw] {steel};
+  \node (n3331) at ([xshift=4cm, yshift=-10cm] node cs:name = root, anchor=south) [right     ] {Elastic modulus $E$ = 200 (GPa)};
+  \node (n3332) at ([xshift=4cm, yshift=-11cm] node cs:name = root, anchor=south) [right     ] {Yield stress $f_y$ = 460 (MPa)};
+
+  \node (n34)   at ([xshift=2cm, yshift=-12cm] node cs:name = root, anchor=south) [right,draw] {Concrete};
+  \node (n341)   at ([xshift=3cm, yshift=-13cm] node cs:name = root, anchor=south) [right     ] {Compressive strength $c_u$ = 50 MPa};
+  \node (n342)   at ([xshift=3cm, yshift=-14cm] node cs:name = root, anchor=south) [right     ] {Initial elastic $c_i$ = 35 (GPa)};
+
+  \node (n4)    at ([xshift=1cm, yshift=-15cm] node cs:name = root, anchor=south) [right,draw] {FRP plating};
+  \node (n41)   at ([xshift=2cm, yshift=-16cm] node cs:name = root, anchor=south) [right     ] {Elastic Modulus $E$ = 160 (GPa)};
+  \node (n42)   at ([xshift=2cm, yshift=-17cm] node cs:name = root, anchor=south) [right     ] {Tensile Strength $f_t$ = 3000 (MPa)};
+
+%}}}
+
+  \foreach \ni in {1,2,3,4}{
+    \draw[thick,-{Circle[open]}] (root) |- (n\ni); 
+  }
+
+  \foreach \ni in {n31,n32,n33,n34}{
+    \draw[thick,-{Circle[open]}] (n3) |- (\ni); 
+  }
+
+
+  \foreach \ni in {1,2,3}{
+    \draw[thick,-{Circle[open]}] (n33) |- (n33\ni); 
+  }
+
+  \draw[thick,-{Circle[open]}] (n333) |- (n3331); 
+  \draw[thick,-{Circle[open]}] (n333) |- (n3332); 
+
+  \draw[thick,-{Circle[open]}] (n34) |- (n341); 
+  \draw[thick,-{Circle[open]}] (n34) |- (n342); 
+
+  
+  \draw[thick,-{Circle[open]}] ([xshift=-.5cm] node cs:name=n4, anchor=south) |- (n41); 
+  \draw[thick,-{Circle[open]}] ([xshift=-.5cm] node cs:name=n4, anchor=south) |- (n42); 
+
+\end{tikzpicture}

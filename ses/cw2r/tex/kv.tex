@@ -1,0 +1,11 @@
+\def\MyPattern#1{My Random Prefix and #1}
+\def\MySet#1#2{\expandafter\def%
+  \csname\MyPattern{#1}\endcsname%
+  {#2}
+}
+\def\MyGet#1{\csname\MyPattern{#1}\endcsname}
+  % \def\MyGet#1{\texttt{#1}}
+
+% \MySet{x}{1} \MySet{y}{hi}
+% x is \MyGet{x}, y is \MyGet{y}
+% ⇒ x is 1, y is hi

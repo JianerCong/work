@@ -1,0 +1,181 @@
+
+\newcommand{\frametexthere}[1][]{\node at (9,-1) {#1};}
+\newcommand{\ypointhere}[1]{\draw (9,4+8*0.05) node[rectangle,loadpt] (#1)  {};}
+\newcommand{\xpointhere}[1]{\draw (9+18*0.05,4) node[rectangle,loadpt] (#1) {};}
+\newcommand{\framehere}{
+  % The frame
+  \draw[line width=3pt,rectangle,rounded corners=1cm] (-3,-2) rectangle (18+3,8+3);
+  % Horizontal beams
+  \foreach \i in {0,4,8}{
+    \draw[beam] (0,\i) -- (18,\i);
+  }
+  % Vertical beams
+  \foreach \i in {0,5,9,13,18}{
+    \draw[beam] (\i,0) -- (\i,8);
+  }
+  % Coloumns
+  \foreach \i in {0,5,9,13,18}{
+    \foreach \j in {0,4,8}{
+      \node at (\i,\j) [col,inner sep=2mm] {};
+    }
+  }
+}
+
+% plot the centre of mass with the given name
+\newcommand{\centerofmass}{
+  \node[circle,loadpt,label=below:c.o.m] at (9,4)  {};
+}
+
+\newcommand{\bigYhere}{
+  \draw[dim] (-2,0) -- node[above] {$L_Y=8$m} (-2,8);
+}
+\newcommand{\smallYhere}{
+  % Vertical dimensions
+  \foreach \x/\y in {
+    0/4,4/8}{
+    \draw[dim] (-1,\x) -- node[above] {4} (-1,\y);
+  }
+}
+\newcommand{\bigXhere}{
+  \draw[dim] (0,10) -- node[above] {$L_X=18$m} (18,10);
+}
+
+\newcommand{\smallXhere}{
+  % Horizontal dimensions
+  \foreach \x/\y/\l in {
+    0/5/5,5/9/4,            %it's <start>/<end>/<label>
+    9/13/4,13/18/5}{
+    \draw[dim] (\x,9) -- node[above] {\l} (\y,9);
+  }
+}
+
+\tikzstyle{beam}=[line width=5pt,draw=gray!80]
+\tikzstyle{col}=[rectangle,fill=gray!80]
+\tikzstyle{dim}=[<->,thick,sloped]
+\tikzstyle{loadpt}=[fill=black,inner sep=0.5mm]
+\newcommand{\myu}{0.5cm}
+% \begin{tikzpicture}
+  % \draw[style=help lines,step=5*\myu] (0,0) grid (100,100);
+  \begin{scope}[x=\myu,y=\myu]
+    % The original frame
+    \begin{scope}
+      \framehere
+      \bigXhere
+      \smallXhere
+      \bigYhere
+      \smallYhere
+      \coordinate (myframe) at (-3,4.5);
+
+      \centerofmass
+      \draw[thick] (9,4+8*0.05) node[rectangle,loadpt]  {}
+      -- +(1,2) node[above,text width=12*\myu] {%
+        Center of mass (c.o.m) shifted in $Y$-~direction
+        for $5\% \times L_Y = 8 \times 0.05 = 0.4$m
+      };
+
+      \draw[thick] (9+18*0.05,4) node[rectangle,loadpt]  {}
+      -- +(2,-1) node[below,text width=12*\myu] {%
+        c.o.m shifted in $X$-~direction
+        for $5\% \times L_X = 18 \times 0.05 = 0.9$m
+      };
+      \frametexthere[Plan View of Given Frame]
+    \end{scope}
+
+    % The array that locates the four primative cases
+    \begin{scope}
+      \matrix[matrix of nodes, row sep=15*\myu,column sep=25*\myu] (theCase) at
+      (45,20) {
+        a & b \\
+        c & d \\
+      };
+      % The border arount the matrix
+      \draw ([shift={(-17,-3)}] theCase.base) coordinate (rec_dl); \draw
+      ([shift={(35,30)}] theCase.base) coordinate (rec_ur); \draw[line width=5]
+      (rec_dl) -- (rec_dl |- rec_ur) coordinate (rec_ul) -- (rec_ur) -- (rec_ur
+      |- rec_dl) coordinate (rec_rd) -- (rec_dl);
+
+      % The arrow from main frame to array
+      \draw[->,very thick] (21,4) to[out=0,in=180] (rec_dl);
+    
+      \node[right] at ([shift={(-15,28.5)}] theCase.base) {
+        \begin{minipage}[l]{1.0\linewidth}
+          {\large The 4 \emph{primative load cases}}
+
+          \smallskip
+          For each storey, apply the
+          seismic force $F_k$ for that storey at the following locations to get
+          the \emph{primative load cases.}
+        \end{minipage}
+      };
+
+      \newcommand{\forceDescription}[3]{%
+        $L_{#1}$: Seismic force in $#2$-~direction, applied on c.o.m shifted in
+        $#3$-~direction}
+
+    
+      \newcommand{\fXhere}[1]{ \draw[{latex}-,very thick] (#1) -- +(3,0)
+        node[right] {$F_k$}; } \newcommand{\fYhere}[1]{ \draw[{latex}-,very
+        thick] (#1) -- +(0,3) node[above] {$F_k$}; }
+
+      % L1: Seismic force in X-direction, shifted in X direction
+      \begin{scope}[shift={(theCase-1-1)}]
+        \framehere \bigXhere \frametexthere[\forceDescription{1}{X}{X}]
+        \xpointhere{aa} %create a node named ya
+        \fXhere{aa}
+      \end{scope}
+    
+      % L2: Seismic force in Y-direction, shifted in X direction
+      \begin{scope}[shift={(theCase-1-2)}]
+        \framehere \bigXhere \frametexthere[\forceDescription{2}{Y}{X}]
+        \xpointhere{ab} %create a node named ya
+        \fYhere{ab}
+      \end{scope}
+
+      % L3: Seismic force in X-direction, shifted in Y direction
+      \begin{scope}[shift={(theCase-2-1)}]
+        \framehere \bigYhere \frametexthere[\forceDescription{3}{X}{Y}]
+        \ypointhere{ba} %create a node named ya
+        \fXhere{ba}
+      \end{scope}
+    
+      % L4: Seismic force in Y-direction, shifted in Y direction
+      \begin{scope}[shift={(theCase-2-2)}]
+        \framehere \bigYhere \frametexthere[\forceDescription{4}{Y}{Y}]
+        \ypointhere{bb} %create a node named ya
+        \fYhere{bb}
+      \end{scope}
+
+    \end{scope}
+
+    % The combinations
+    \node[line width=5,draw,anchor=north west] at (0,45) (load_combs) {%
+      \begin{minipage}[l]{1.0\linewidth}
+        {\large The 9 \emph{actual load cases}}
+
+        \smallskip
+        After the 4 \emph{primative load cases} are input into the model. The 9
+        \emph{actual load cases} can be generated as follows:
+        \begin{enumerate}
+        \item $C_1$ no seismic force involved, only live load and dead load.
+        \item Group 1
+          \begin{itemize}
+          \item $C_2:= C_1 +L_1 + 0.3 L_2$
+          \item $C_3:= C_1 +L_1 - 0.3 L_2$
+          \item $C_4:= C_1 +0.3 L_1 + L_2$
+          \item $C_5:= C_1 +0.3 L_1 - L_2$
+          \end{itemize}
+        \item Group 2
+          \begin{itemize}
+          \item $C_6:= C_1 +L_3 + 0.3 L_4$
+          \item $C_7:= C_1 +L_3 - 0.3 L_4$
+          \item $C_8:= C_1 +0.3 L_3 + L_4$
+          \item $C_9:= C_1 +0.3 L_3 - L_4$
+          \end{itemize}
+        \end{enumerate}
+      \end{minipage}
+    };
+
+    % the final arrow
+    \draw[->,very thick] (rec_ul) to[out=180,in=0] (load_combs.north east);
+  \end{scope}
+% \end{tikzpicture}

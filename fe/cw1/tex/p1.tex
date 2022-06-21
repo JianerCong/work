@@ -1,0 +1,502 @@
+\newcommand{\lhs}{%
+  \ensuremath{-(x T')' + \alpha (T - T_{_{\infty}})}
+}
+
+\begin{questionbox}
+  The temperature distribution $T$ is governed by
+
+  \begin{align}
+    \lhs & = 0,
+    & (0 \leq x \leq L) \label{eq:base}
+  \end{align}
+  Where BCs are
+  \begin{align}
+    {[xT']}_{x=0} &= 0 \label{eq:bc1}\\
+    T(L) &= T_0 \label{eq:bc2}
+  \end{align}
+  And the constants are $L = 4, T_0 = 250, T_{\infty} = 75, \alpha = 0.4168$.
+\end{questionbox}
+
+\subsection*{Answer}\label{sec:q1}
+
+\subsubsection*{Applying variational principle}
+Applying variational principle, we put the LHS of \cref{eq:base} into the
+integral with $\delta T$
+\renewcommand{\i}[1]{\ensuremath{\int_0^L #1 dx}}
+\begin{align}
+  \i{[\lhs] \delta T} &=0 \notag\\
+                      &= \cla{-\i{(xT')' \delta T}}
+                        +\clb{\i{\alpha T \delta T}}
+                        -\clc{\i{\alpha T_{\infty} \delta T}} \label{eq:base2}\\
+                      &:= \cla{[1]} + \clb{[2]} + \clc{[3]} \notag
+\end{align}
+
+\subsubsection*{Term $\cla{[1]}$}
+For $\cla{[1]}$, we integrate by part:
+\def\bdr{\cld{\ensuremath{{[xT' \delta T]}_0^L}}}
+\def\Bdr{\cld{\ensuremath{{[xT' T]}_0^L}}} %bdr without $\delta$
+\begin{align*}
+  \cla{[1]} &= -(\bdr - \i{\delta T' x T'}) \\
+            &= -(\cdots - \i{x \delta(\frac{1}{2} T'^2) }) \\
+            &= -(\cdots - \i{\delta(x\frac{1}{2} T'^2)})
+\end{align*}
+The term \bdr{} will form the \emph{boundary vector}.
+
+Therefore, $\cla{[1]}$ becomes
+
+\def\aai{x\frac{1}{2} T'^2}
+\def\aa{\delta(\aai)}
+\begin{align}
+  \cla{[1] = \i{\aa}} - \bdr \label{eq:1}
+\end{align}
+
+\def\b{\ensuremath{\clb{[2]}}}
+\def\c{\ensuremath{\clc{[3]}}}
+\subsubsection*{Terms \b and \c}
+For \b and \c:
+\def\bbi{\frac{\alpha}{2}T^2}
+\def\bb{\delta(\bbi)}
+\def\cci{\alpha T_{\infty} T}
+\def\cc{-\delta(\cci)}
+\begin{align}
+  \b &= \clb{\i{\alpha \delta (\frac23 T^2)} = \i{\bb}}\label{eq:2}\\
+  \c &= \clc{\i{\cc}} \label{eq:3}
+\end{align}
+
+\subsubsection*{Putting them back}
+Substituting \cref{eq:1,eq:2,eq:3} back to \cref{eq:base2} gives
+
+\newcommand{\thethree}[5]{\cla{#1} #4 \clb{#2} #5 \clc{#3}}
+\begin{align}
+  % \cla{[1]} + \clb{[2]} + \clc{[3]}
+  \thethree{[1]}{[2]}{[3]}{+}{+}
+  % &= \i{\aa} + \i{\bb} + \i{\cc} \notag\\
+    &= \thethree{\i{\aa}}{\i{\bb}}{\i{\cc}}{+}{+}  - \bdr \notag\\
+    % &= \i{\aa + \bb \cc} \notag\\
+    &= \i{\thethree{\aa}{\bb}{\cc}{+}{}}  -\bdr \notag\\
+    % &=\delta\i{\aai + \bbi - \cci} \notag\\
+    &= \delta \left(\i{\thethree{\aai}{\bbi}{\cci}{+}{-}} - \Bdr \right)
+      \label{eq:4}
+\end{align}
+Now \cref{eq:4} gives us
+\begin{align}
+  \mbox{The variational principle problem} =
+  \begin{cases}
+    I[T] &:= \i{\thethree{\aai}{\bbi}{\cci}{+}{-} - \Bdr} \\
+    \delta T &= 0
+  \end{cases} \label{eq:var}
+\end{align}
+
+\subsubsection*{Substitute model function}
+According to Galerkin's method, if we have n nodes, then we take the following
+model function $T_{t}(x)$:\footnote{Here we use the \emph{Einstein notation},
+  which is the convention that says ``Repeating indexes imply summation''. For
+  example, $a_i b_i = \sum_i a_i b_i$ and $K_{ij}v_j = \sum_j K_{ij} v{j}$.}
+
+\begin{align}
+  T_t(x) &:= N_i T_i & i = (1 ,\ldots , n )\label{eq:testfun}
+\end{align}
+Where $N_i = N_i(x)$ is the shape function for node $i$, and $T_i$ is the
+temperature on node $i$.
+
+Substituting $T = T_t$ in \cref{eq:testfun} back into \cref{eq:var} gives
+\def\x{\ensuremath{\alpha T_{\infty} N_i T_i}}
+\newcommand{\eBdri}[1]{\ensuremath{{[xT']}_{#1}}}  %an elaborate term
+\newcommand\eBdr[1]{\ensuremath{\eBdri{#1} T(#1)}} % End of boundary
+\newcommand{\twoBdr}{\ensuremath{
+    \left(\cld{\eBdr{L} - \eBdr{0}}\right)
+  }}
+\begin{align}
+  I[T_i] &:= \i{\thethree{\frac{x}{2} {(N_i T_i)'}^2}
+           {\frac{\alpha}{2} {(N_i T_i)}^2}{\x}{+}{-}
+           }- \twoBdr
+           \notag\\
+         &=\thethree{\i{T_i \frac{x}{2} N_i' N_j' T_j}}
+           {\i{\frac{\alpha}{2} T_i N_i N_j T_j}}
+           {\i{\x}}{+}{-} - \cld{\dotsb}
+           \notag\\
+         &= \thethree{T_i \i{ \frac{x}{2} N_i' N_j' } T_j}
+           {T_i \i{\frac{\alpha}{2} N_i N_j} T_j}
+           {\alpha T_{\infty} \i{N_i} T_i}{+}{-} - \cld{\dotsb}
+           \label{eq:6}
+\end{align}
+Now, define
+\begin{align*}
+  \cla{K_{ij}} & := \cla{\i{xN_i' N_j'}}     \\
+  \clb{L_{ij}} & := \clb{\i{\alpha N_i N_j}} \\
+  \clc{b_i}    & := \clc{\alpha T_{\infty} \i{N_i}}  \\
+  \cld{c} &:= \twoBdr{} \\
+  M_{ij} & := L_{ij} + K_{ij}
+\end{align*}
+Then \cref{eq:6} becomes
+\def\c{\cld{c}}
+\begin{align*}
+  I[T_i] &= \thethree{\frac{1}{2} T_i K_{ij} T_j}
+           {\frac{1}{2} T_i K_{ij} T_j}{b_i T_i}{+}{-} - \c \\
+         &= \frac{1}{2} T_i M_{ij} T_j - b_i T_i  - \c
+\end{align*}
+
+\def\T{\mathbf{T}}
+\def\M{\mathbf{M}}
+\def\b{\mathbf{b}}
+\def\c{\mathbf{c}}
+
+Setting the derivatives with respect to $\T := [T_1, \dotsc , T_{n}]$ equal to
+zero gives:
+\newcommand{\pFrac}[2]{\ensuremath{\frac{\partial #1}{\partial #2}}}
+\newcommand{\pcTk}{\ensuremath{\cld{\pFrac{c}{T_k}}}}
+\begin{align}
+ \pFrac{I[T]}{T_k} &= \frac{1}{2}[T_i M_{ik} + M_{kj}T_j] - b_k - \pcTk
+                                       = M_{k,j}T_j - b_k - \pcTk \notag\\
+  \frac{\partial I[T]}{\partial \T }
+                   &= \M\T - \b - \c= \mathbf{0} \notag\\
+  \M \T &= \b + \c \label{eq:mtb}
+\end{align}
+Where
+\newcommand{\tsps}[1]{\ensuremath{{#1}^{\text{T}}}}
+\newenvironment{tbmatrix}{\begin{bmatrix}}{\end{bmatrix}^{\text{T}}}
+\begin{align*}
+  \M &=
+       \begin{bmatrix}
+         M_{11} & \cdots& M_{1n}\\
+         \vdots& \ddots &\\
+         M_{n1}&& M_{nn} \\
+       \end{bmatrix} &
+                       \b &=
+                            % \tsps{\begin{bmatrix}
+                            %   b_1 & \dotsc & b_n
+                            % \end{bmatrix}} \\
+                            \begin{tbmatrix}
+                              b_1 & \dotsc & b_n
+                            \end{tbmatrix} \\
+  \c &=\begin{tbmatrix}
+    -\eBdri{0} & 0 & \dotsc & 0 & \eBdri{L}
+       \end{tbmatrix}
+\end{align*}
+
+\subsubsection*{Calculate $\c$}
+Since we use a three-node mesh as shown on \cref{fig:shpfuncs}. $\c$ is
+\begin{align}
+  \c &=\begin{tbmatrix}
+    -\eBdri{0}&0&0&0& \eBdri{L}
+  \end{tbmatrix}
+                      \notag\\
+  \intertext{Applying the boundary condition \cref{eq:bc1} gives}
+  \c &=\begin{tbmatrix}
+    0&0&0&0& \eBdri{L}
+  \end{tbmatrix} \label{eq:bigc}
+\end{align}
+And the term $\eBdri{L}$ is another unknown that the question asked for.
+\begin{figure}
+  \centering
+  \input{img/shapes}
+  \caption{Shape functions and their derivative}\label{fig:shpfuncs}
+\end{figure}
+\subsubsection*{Calculate $K_{ij}$}
+The shape functions and their derivatives are presented on \cref{fig:shpfuncs}.
+We first calculate the diagonal entries:
+
+
+\newcommand{\mynode}[3][]{
+  \begin{tikzpicture}
+    \def\h{17pt}
+    \useasboundingbox (0,0) rectangle (\h,\h);
+    \node[shape=circle, fill=#3,
+    fill opacity=0.5,text opacity=1,font=\footnotesize, shift={(8.5pt,3pt)}] {#2};
+  \end{tikzpicture}
+}
+
+\newcommand{\na}{\mynode{1}{\mycola}}
+\newcommand{\nb}{\mynode{2}{\mycolb}}
+\newcommand{\nc}{\mynode{3}{\mycolc}}
+\newcommand{\nd}{\mynode{4}{gray}}
+
+\begin{align}
+  K_{11} &= \i{x N_0' N_0'}
+           = [\text{area of \na on \cref{fig:shpfuncs}}]
+           \times {[\text{the slope of shape function}]}^2
+           :=  \na \times s \label{eq:k11}\\
+  K_{22} &= \i{xN_1' N_1'} = [\text{area of \na{} $+$ \nb{}}]
+           \times {[\text{the slope of shape function}]}^2
+           := (\na{} + \nb{}) \times s \label{eq:k22}\\
+  \intertext{Similarly}
+  K_{33} & = (\nb{} + \nc{}) \times s \label{eq:k33}\\
+  K_{44} & = (\nc{} + \nd{}) \times s \label{eq:k44}\\
+  K_{55} &= (\nd{}) \times s \label{eq:k55}
+\end{align}
+Note that in \cref{eq:k11,eq:k22,eq:k33,eq:k44,eq:k55}, they are all multiplied by the same value $s = \frac{1}{l^2}$, even if
+the slope is sometimes positive and sometimes negative. This is because, when
+they are squared, they are always positive.
+
+Now the areas can be calculated as follows:
+\begin{align}
+  \na &= \frac{l^2}{2} \label{eq:na}\\
+  \nb &= l^2 + \na = \frac{3}{2}l^2 \label{eq:nb}\\
+  \nc &= l^2 + \nb = \frac{5}{2}l^2 \label{eq:nc}\\
+  \nd &= l^2 + \nc = \frac{7}{2}l^2 \label{eq:nd}
+\end{align}
+Substituting \cref{eq:na,eq:nb,eq:nc,eq:nd} back into
+\cref{eq:k11,eq:k22,eq:k33,eq:k44,eq:k55} gives
+\begin{align}
+  K_{11} &=  \na \times s =
+           \frac{l^2}{2} \times \frac{1}{l^2}
+           = \frac{1}{2}\label{eq:nk11}\\
+  K_{22} &= (\na{} + \nb{}) \times s =
+           (\frac{l^2}{2} + \frac{3}{2}l^2) \frac{1}{l^2} =
+           \frac{1}{2} + \frac{3}{2} = \frac{4}{2}
+           \label{eq:nk22}\\
+  K_{33} & = (\nb{} + \nc{}) \times s
+           (\frac{3}{2}l^2 + \frac{5}{2}l^2) \frac{1}{l^2} =
+           \frac{3}{2} + \frac{5}{2} = \frac{8}{2}
+           \label{eq:nk33}\\
+  K_{44} & = (\nc{} + \nd{}) \times s =
+           \frac{5}{2} + \frac{7}{2} = \frac{23}{2}
+           \label{eq:nk44}\\
+  K_{55} &= \nd{} \times s = \frac{7}{2}
+           \label{eq:nk55}
+\end{align}
+
+Now for the off-diagonal entries, because
+\def\K{\ensuremath{\mathbf{K}}}
+\begin{enumerate}
+\item $\K$ is symmetrical ($K_{ij} = K_{ji}$)
+\item the product of two node's shape functions is zero if the nodes are not
+  next to each other
+\end{enumerate}
+the only entries that we need to calculate are the following
+\begin{align}
+  K_{12} &
+           = [\text{area of \na{} on \cref{fig:shpfuncs}}]
+           \times - {[\text{the slope of shape function}]}^2
+           = \na{} \times (-s)  = -\frac{1}{2}\label{eq:nk12}\\
+  K_{23} &= \nb{} \times (-s) = -\frac{3}{2}\label{eq:nk23}\\
+  K_{34} &= \nc{} \times (-s) = -\frac{5}{2}\label{eq:nk34}\\
+  K_{45} &= \nd{} \times (-s) = -\frac{7}{2}\label{eq:nk45}
+\end{align}
+
+Combining
+\cref{eq:nk12,eq:nk23,eq:nk34,eq:nk45,eq:nk11,eq:nk22,eq:nk33,eq:nk44,eq:nk55}
+gives the matrix $\K$
+\def\matK{\ensuremath{\frac{1}{2}
+    \begin{bmatrix}
+      1 & -1 &&&\\
+      -1 &4&-3&&\\
+      & -3 &8&-5&\\
+      &&-5&12&-7\\
+      &&&-7&7
+    \end{bmatrix}
+  }}
+\begin{align}
+  \K &=
+               \begin{bmatrix}
+                 K_{11} & K_{12} &&&\\
+                 K_{12} & K_{22} &K_{23}&&\\
+                 & K_{23} &K_{33}&K_{34}&\\
+                 &&K_{34}&K_{44}&K_{45}\\
+                 &&&K_{45}&K_{55}
+               \end{bmatrix} = \matK{} \label{eq:bigK}
+\end{align}
+In \cref{eq:bigK}, empty entry implies zero.
+
+\subsubsection*{Calculate $L_{ij}$}
+\def\L{\ensuremath{\mathbf{L}}}
+Before we calculate \L, we calculate two \emph{convolution integrals}
+% Triangle A
+\newcommand{\Ta}{
+  \begin{tikzpicture}
+    \tikzstyle{every node}=[font=\scriptsize]
+    \def\w{1cm}
+    \def\h{0.5cm}
+    \useasboundingbox (0,0) rectangle (\w + 15pt, \h);
+    \fill[gray] (0,0) -- (\w,\h) -- (\w,0) -- cycle;
+    % Draw the two dimensions
+    % \def\h{3.5pt}
+    \def\i{0.1cm}
+    \draw[thin,<->] (0,-\i) to node[below] {$l$} +(\w,0);
+    \draw[thin,<->] (\w + \i,0) to node[right] {1} +(0,\h);
+  \end{tikzpicture}
+}
+% Triangle B
+\newcommand{\Tb}{
+  \begin{tikzpicture}
+    \tikzstyle{every node}=[font=\scriptsize]
+    \def\w{1cm}
+    \def\h{0.5cm}
+    \useasboundingbox (-10pt,0) rectangle (\w + 5pt, \h);
+    \fill[gray] (0,0) -- (0,\h) -- (\w,0) -- cycle;
+    \def\i{0.1cm}
+    \draw[thin,<->] (0,-\i) to node[below] {$l$} +(\w,0);
+    \draw[thin,<->] (-\i,0) to node[left] {1} +(0,\h);
+  \end{tikzpicture}
+}
+
+\newcommand{\il}[1]{\ensuremath{\int_0^l #1 dx}}
+\newcommand{\brkIt}[1]{\ensuremath{\left[#1\right]}}
+\newcommand{\brkItl}[1]{\ensuremath{{\brkIt{#1}}_0^l}}
+\newcommand{\prnIt}[1]{\ensuremath{\left( #1 \right)}}
+\def\xl{\ensuremath{{\left( \frac{x}{l} \right)}^2}}
+% \def\a{\cla{a}}
+% \def\b{\clb{b}}
+\def\a{\tcbox[on line,size=small,colback=\mycola!20,colframe=\mycola]{a}}
+\def\b{\tcbox[on line,size=small,colback=\mycolb!20,colframe=\mycolb]{b}}
+\def\anum{\ensuremath{\alpha\frac{l}{3}}}
+\def\bnum{\ensuremath{\alpha\frac{l^2}{2} - \anum }}
+\def\bnumb{\ensuremath{\alpha\frac{l}{6}(3l-2)}}
+\begin{align}
+  \a &:= \alpha \il{\Ta \Ta} = \alpha  \il{\xl{}} \notag\\
+  &= \alpha \frac{1}{l^2} \brkItl{\frac{1}{3}x^3}
+  = \frac{l^3}{3l^2} = \anum \\[\baselineskip]
+  \b &:= \alpha \il{\Ta \Tb } = \alpha  \il{\frac{x}{l} (l - \frac{x}{l})} \notag\\
+    &= \alpha\il{x} - \alpha \il{\xl{}}
+      = \alpha\brkItl{\frac{x^2}{2}} - \a \notag\\
+  &= \bnum =  \bnumb
+\end{align}
+Now, because $L_{ij} := \alpha \i{N_i N_j}$, from \cref{fig:shpfuncs} we see
+that
+\begin{align}
+  L_{11} &= L_{55} = \a  = \anum \label{eq:l1}\\
+  L_{22} &= L_{33} = L_{44} = 2 \times \a = \alpha\frac{2l}{3} \label{eq:l2}\\
+  L_{12} &= L_{23} = L_{34} = L_{45} = \b = \bnumb \label{eq:l3}
+\end{align}
+\def\L{\ensuremath{\mathbf{L}}}
+Since \L \ has the same properties as \K \
+(i.e.,being symmetrical, non-neibour entries have value of 0).
+Combining \cref{eq:l1,eq:l2,eq:l3} gives the matrix \L
+\def\x{3l-2}
+\begin{align}
+  \mathbf{L} &=
+               \begin{bmatrix}
+                 L_{11} & L_{12} &&&\\
+                 L_{12} & L_{22} &L_{23}&&\\
+                 & L_{23} &L_{33}&L_{34}&\\
+                 &&L_{34}&L_{44}&L_{45}\\
+                 &&&L_{45}&L_{55}
+               \end{bmatrix}
+                            =
+                            \frac{\alpha l}{6}
+                            \begin{bmatrix}
+                              2& c &&&\\
+                              c &4&c&&\\
+                              & c &4&c&\\
+                              &&c&4&c\\
+                              &&&c&2
+                            \end{bmatrix} \label{eq:bigL}\\
+  c &:= \x \notag
+\end{align}
+In \cref{eq:bigL}, empty entry implies zero.
+
+\subsubsection*{Calculate $b_i$}
+\def\b{\ensuremath{\mathbf{b}}}
+\def\matb{\ensuremath{
+    \begin{bmatrix}
+      1 \\ 2  \\ 2 \\ 2 \\ 1
+    \end{bmatrix}
+  }}
+The last array needed for \cref{eq:mtb} is \b \ where
+\def\aTi{\ensuremath{\alpha T_{\infty}}}
+\def\A{\tcbox[on line,size=small,colback=\mycolc!20,colframe=\mycolc]{A}}
+\def\alT{\ensuremath{\alpha T_{\infty}}}
+\begin{align}
+  \clc{b_i} :&= \clc{\aTi \i{N_i}} \notag\\
+             &= \aTi  \times [\text{The area under shape function \ } N_i(x)] \notag\\
+  \intertext{Therefore}
+  \b &= \A \matb
+       \quad \text{where \ } \A = \alT \times \left[
+       \text{area of \Ta}  = \frac{l}{2} \right] \label{eq:bigb}
+\end{align}
+
+\subsubsection*{Back to the system}
+Now, substituting \cref{eq:bigc,eq:bigK,eq:bigL,eq:bigb} back into \cref{eq:mtb} gives
+the system
+\def\M{\ensuremath{\mathbf{M}}}
+\input{tex/matM}
+\begin{align}
+  \M &= \L + \K =
+  \frac{\alpha l}{6}
+  \begin{bmatrix}
+    2& c &&&\\
+    c &4&c&&\\
+    & c &4&c&\\
+    &&c&4&c\\
+    &&&c&2
+  \end{bmatrix} + \matK \notag\\
+  c &= \x \notag\\
+  \b &=\alT \frac{l}{2}\begin{bmatrix}1&2&2&2&1\end{bmatrix}^{\text{T}} \notag\\
+  \intertext{Substituting $l = \frac{4}{4} = 1$
+  gives}
+  c &= 1 \notag\\
+  \M &=
+       \frac{\alpha}{6}
+       \begin{bmatrix}
+         2& 1 &&&\\
+         1 &4&1&&\\
+         & 1 &4&1&\\
+         &&1&4&1\\
+         &&&1&2
+       \end{bmatrix} + \matK \notag\\
+     &=\MyGet{M} \label{eq:bigM}\\
+  \b &=\alT \frac{1}{2}\begin{bmatrix}1&2&2&2&1\end{bmatrix}^{\text{T}} \notag \\
+\end{align}
+Therefore the system in \cref{eq:mtb} becomes
+\begin{align}
+  \MyGet{M}
+  \begin{bmatrix} T_1 \\ T_2 \\ T_3 \\ T_4 \\ T_5 \end{bmatrix}
+  &= \alT \frac{1}{2} \matb +
+    \begin{bmatrix}
+      0\\0\\0\\0\\ s
+    \end{bmatrix} \label{eq:readyToSplit}\\
+  s&= \eBdri{L} \notag
+\end{align}
+Because of boundary condition \cref{eq:bc2}, $T_5=T_0$ is known, therefore the
+unknowns are:
+\begin{itemize}
+\item the node temperatures $T_1$ to $T_4$. [4 unknowns]
+\item $s$,the heat flow per unit time at $x=L$ [1 unknown]
+\end{itemize}
+Therefore there are 5 equations and 5 unknowns.
+We follow the following steps:
+\begin{enumerate}
+\item Solve for $T_1$ to $T_4$
+\item Find $s$, 
+\end{enumerate}
+\subsubsection*{Solve for $T_1$ to $T_4$}
+Moving $T_5$ to the RHS of \cref{eq:readyToSplit} gives
+\def\Tn{\ensuremath{\begin{bmatrix} T_1 \\ T_2 \\ T_3 \\ T_4 \end{bmatrix}}}
+\def\alTt{\ensuremath{\alT \frac{1}{2}}}
+\def\g#1{\MyGet{#1}}
+\begin{align}
+  \g{M2} \Tn
+    &= \alTt \matb +
+    \begin{bmatrix}
+      0\\0\\0\\0\\ s
+    \end{bmatrix} -
+  T_5\g{Me} \label{eq:toDivide}\\
+  s&= \eBdri{L} \notag
+\end{align}
+We divide \cref{eq:toDivide} into two pieces for our two steps:
+\begin{align}
+  \g{M.upper} \Tn &= \alTt \g{v.top} - T_5 \g{v2.top} \label{eq:mupper}\\
+  \prnIt{\g{last.lhs}} T_4 &= \alTt + s  - T_5 \prnIt{\g{last.rhs}} \label{eq:mlower}
+\end{align}
+Substituting $\alpha = 0.4168, T_{\infty} = 75$ and $T_5 = T_0 = 250$ into
+\cref{eq:mupper} gives
+\begin{align}
+  \g{M.upper.n} \Tn &= \g{rhs.upper} = \g{rhs.upper.n} \notag\\
+  \intertext{Solving the system gives}
+  \Tn &= \g{T1.T4} \label{eq:resultT}
+\end{align}
+Now substituting $T_4 = \g{T4.n}$ into \cref{eq:mlower} gives
+\begin{align}
+  s &= \eBdri{L} \notag\\
+    &= \prnIt{\g{last.lhs}} \times T_4 + T_5 \prnIt{\g{last.rhs}} - \alTt \notag\\
+    &= \prnIt{\g{last.lhs.n}} \times \g{T4.n} + 250 \times \g{last.rhs.n} - \g{alT2.n} \notag\\
+  &= \g{s}
+\end{align}
+Which is the \emph{heat flow per unit time at $x=L$}
+\subsubsection*{Remark}
+As shown in \cref{eq:resultT}, the temperature $T$ gradually increases from $T_1 = \g{T1.n}$,
+which is a bit higher than the ambient temperature $T_{\infty}$, to $T_4 =
+\g{T4.n}$, which is a bit lower than the temperature, $T_5 = T_0 = 250$, at the
+end $x=L$.
+
+In order to be more accurate, finer mesh (i.e., more nodes) shall be used.

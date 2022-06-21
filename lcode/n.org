@@ -1,0 +1,1074 @@
+** two sum
+*** Brute force
+#+begin_src python
+  class Solution:
+     def twoSum(self, nums: List[int], target: int) -> List[int]:
+         n = len(nums)
+         for i in range(n - 1):
+             for j in range(i+1,n):
+                 a = nums[i] + nums[j]
+                 if a == target:
+                     return [i,j]
+#+end_src
+*** Hash based
+Put into a dict
+#+begin_src python
+class Solution:
+    def twoSum(self,nums: List[int], target: int) -> List[int]:
+      d: Dict[int,int] = dict()
+      for i in range(len(nums)):
+        o = target - nums[i]
+        if o in d.keys():
+            return [i, d[o]]
+        d[nums[i]] = i
+
+        #+end_src
+** add two numbers
+*** mine
+#+begin_src python
+  from typing import Optional
+
+  # Definition for singly-linked list.
+  class ListNode:
+      def __init__(self, val=0, next=None):
+          self.val = val
+          self.next = next
+
+  class Solution:
+      def addTwoNumbers(self, l1: Optional[ListNode], l2: Optional[ListNode]) -> Optional[ListNode]:
+          n1 = self.list2num(l1)
+          n2 = self.list2num(l2)
+          n = n1 + n2
+          print(f'n1 : {n1} n2: {n2}, n1 + n2: {n}')
+          return self.num2list(n)
+      def list2num(self,l):
+          n = 0
+          i = 1
+          while l is not None:
+              n += l.val * i
+              i *= 10
+              l = l.next
+          return n
+      def num2list(self,n):
+          if n == 0: return ListNode()
+          else:
+              l = None
+              head = None
+              while n != 0:
+                  print(f'now n is {n}')
+                  next = ListNode(n%10)
+                  if head is not None:
+                      head.next = next
+                  else:
+                      print('This is the first loop')
+                      l = next
+                  head = next
+                  n = n//10
+              return l
+
+  l1 = ListNode(val=1, next=
+               ListNode(val=2,next=
+                        ListNode(val=3)))
+
+  l2 = ListNode(val=2, next=
+               ListNode(val=9,next=
+                        ListNode(val=9)))
+  s = Solution()
+  l3 = s.addTwoNumbers(l1, l2)
+  print(f'l3 is {s.list2num(l3)}')
+
+#+end_src
+*** use carry
+#+begin_src python
+from typing import Optional
+
+# Definition for singly-linked list.
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def addTwoNumbers(self, l1: Optional[ListNode], l2: Optional[ListNode]) -> Optional[ListNode]:
+        dum = ListNode(-1)
+        ans = dum
+        carry=0
+
+        print('Stage 1: adding two vals')
+        while (l1 is not None and l2 is not None):
+            carry , ans = self.add_this(l1.val + l2.val + carry, ans)
+            l1 = l1.next
+            l2 = l2.next
+
+        print('Stage 2: adding longer')
+        longer = l1 if l1 is not None else l2
+        while longer is not None:
+            carry , ans = self.add_this(longer.val + carry, ans)
+            longer = longer.next
+
+        print('Stage 3: add the carry')
+        while carry != 0:
+            carry , ans = self.add_this(carry, ans)
+
+        return dum.next
+    def add_this(self,val, ans):
+        digit = val % 10
+        print(f'Adding value: {val}, the digit: {digit}, current value: {ans.val}')
+        ans.next = ListNode(digit)
+        ans = ans.next
+        carry = val // 10
+
+        return (carry, ans)
+    def list2num(self,l):
+        n = 0
+        i = 1
+        while l is not None:
+            n += l.val * i
+            i *= 10
+            l = l.next
+
+        return n
+
+l1 = ListNode(val=1, next=
+             ListNode(val=2,next=
+                      ListNode(val=3)))
+
+l2 = ListNode(val=2, next=
+             ListNode(val=9,next=
+                      ListNode(val=9)))
+s = Solution()
+l3 = s.addTwoNumbers(l1, l2)
+print(f'l3 is {s.list2num(l3)}')
+
+
+#+end_src
+** longest substring without repeating char
+*** brute force
+#+begin_src python
+class Solution:
+    def lengthOfLongestSubstring(self, s: str) -> int:
+        l = 0
+        for i in range(len(s)):
+            print(f'Loop {i}, l now :{l}')
+            l0 = self.find_words(s,i)
+            l = max(l, l0)
+        return l
+    def find_words(self,s,i):
+        d = set()
+        for i in range(i,len(s)):
+            print(f'\t i: {i}, s[i], {s[i]}, d: {d}')
+            if s[i] not in d: d.add(s[i])
+            else:
+                return len(d)
+        return len(d)
+
+        #+end_src
+*** window based method
+#+begin_src python
+class Solution:
+    def lengthOfLongestSubstring(self, s: str) -> int:
+        start = 0
+        l = 0
+        l0 = 0
+        d: Dict[str,int] = {}
+        for e in range(len(s)):
+            if s[e] not in d.keys():
+                d[s[e]] = e
+                l0 = e - start + 1
+            else:
+                #print(f'\tNew word found, update d')
+                start = d[s[e]] + 1
+                d[s[e]] = e
+                # clear all keys in d such that d[key] < start
+                for k in list(d.keys()):
+                    if d[k] < start:  d.pop(k)
+            l = max(l0, l)
+            #print(f'Loop {e},l0: {l0}, l: {l} d: {d}')
+        return l
+
+#+end_src
+** median of two sorted array
+*** code
+#+begin_src python
+  from typing import List
+
+  class Solution:
+      def findMedianSortedArrays(self, nums1: List[int], nums2: List[int]) -> float:
+          n: int = len(nums1)
+          m: int = len(nums2)
+
+          l1 = nums1
+          l2 = nums2
+
+          is_even: Bool = ((m + n) % 2 ) == 0
+          if is_even:
+              l1, l2 = self.remove(l1,l2, each_side = (m + n)// 2 - 1)
+              # assert len(l1) + len(l2) == 2
+              #print(f'Removed lists: l1: {l1}, l2: {l2}')
+              return sum(l1 + l2) / 2
+          else:
+              l1, l2 = self.remove(l1,l2, each_side = (m + n - 1)// 2)
+              # assert len(l1) + len(l2) == 1
+              #print(f'Removed lists: l1: {l1}, l2: {l2}')
+              return sum(l1 + l2)
+
+      def remove(self, l1: List[int], l2: List[int] , each_side : int) -> (List[int], List[int]):
+          #print(f'Removing {each_side} from each side.')
+          for i in range(each_side):
+              l1,l2 = self.remove_front(l1,l2)
+              l1,l2 = self.remove_back(l1,l2)
+              #print(f'\tAfter one removal: Now: l1:{l1}, l2:{l2}')
+          return l1,l2
+
+      def remove_front(self,l1: List[int], l2: List[int]) -> (List[int], List[int]):
+          #print('Removing from front for ', end='')
+          if len(l1) == 0:
+              l2 = l2[1:]
+              #print('l2, since l1 is empty')
+          elif len(l2) == 0 or l1[0] <= l2[0]:
+              l1 = l1[1:]
+              #print('l1')
+          else:
+              l2 = l2[1:]
+              #print('l2')
+          return l1,l2
+
+      def remove_back(self,l1: List[int], l2: List[int]) -> (List[int], List[int]):
+          if len(l1) == 0:
+              l2.pop()
+          elif len(l2) == 0 or l1[-1] > l2[-1]:
+              l1.pop()
+          else:
+              l2.pop()
+          return l1,l2
+#+end_src
+*** test
+#+begin_src python
+from m import Solution
+
+s = Solution()
+
+class TestBasicRemove():
+    def test_remove_front(self):
+        l1 = [1,2]
+        l2 = [3,4]
+
+        l1,l2 = s.remove_front(l1,l2)
+
+        assert l1 == [2]
+        assert l2 == [3,4]
+
+
+    def test_remove_front_with_l1_empty(self):
+        l1 = []
+        l2 = [3,4]
+
+        l1,l2 = s.remove_front(l1,l2)
+
+        assert l1 == []
+        assert l2 == [4]
+
+
+    def test_remove_front_with_l2_empty(self):
+        l1 = [1,2]
+        l2 = []
+
+        l1,l2 = s.remove_front(l1,l2)
+
+        assert l1 == [2]
+        assert l2 == []
+
+
+    def test_remove_back(self):
+        l1 = [1,2]
+        l2 = [3,4]
+
+        l1,l2 = s.remove_back(l1,l2)
+
+        assert l1 == [1,2]
+        assert l2 == [3]
+
+    def test_remove_back_with_l1_empty(self):
+        l1 = []
+        l2 = [3,4]
+
+        l1,l2 = s.remove_back(l1,l2)
+
+        assert l1 == []
+        assert l2 == [3]
+
+
+    def test_remove_back_with_l2_empty(self):
+        l1 = [1,2]
+        l2 = []
+
+        l1,l2 = s.remove_back(l1,l2)
+
+        assert l1 == [1]
+        assert l2 == []
+
+def test_remove():
+    l1 = [1,2,3]
+    l2 = [2,4,5]
+    # when there're identical entries at front, remove from l1
+    # when there're identical entries at back, remove from l2
+
+    l1,l2 = s.remove(l1,l2,each_side=2)
+
+    assert l1 == [3]
+    assert l2 == [2]
+
+def test_remove_with_one_empty():
+    l1 = []
+    l2 = [2,4,5]
+
+    l1,l2 = s.remove(l1,l2,each_side = 1)
+
+    assert l1 == []
+    assert l2 == [4]
+
+
+from numpy import median
+def test_median():
+    l1 = [1,2,5]
+    l2 = [1,4,8]
+
+    # Caution l1, l2 changed by following
+    m1 = s.findMedianSortedArrays(l1.copy(),l2.copy())
+    m2 = median(l1 + l2)
+
+    assert m1 == m2
+
+from numpy.random import default_rng
+import pytest
+rng = default_rng()
+
+@pytest.fixture()
+def random_list():
+    size = rng.integers(low=0,high=10,size=1)[0]  # a random size
+    print(f'A size {size} list generated')
+    l = rng.integers(low=0,high=100,size=size)
+    l = l.tolist()
+    return sorted(l)
+
+def get_random_list():
+    size = rng.integers(low=0,high=10,size=1)[0]  # a random size
+    print(f'A size {size} list generated')
+    l = rng.integers(low=0,high=100,size=size)
+    l = l.tolist()
+    return sorted(l)
+
+def test_random_list(random_list):
+    assert random_list == sorted(random_list)
+    if random_list != []:
+        assert min(random_list) >= 0
+        assert min(random_list) == random_list[0]
+        assert max(random_list) == random_list[-1]
+
+def test_median2():
+    # randomly generate two lists of int
+    times = 10
+    for i in range(times):
+        l1 = get_random_list()
+        l2 = get_random_list()
+        assert s.findMedianSortedArrays(l1.copy(), l2.copy()) == median(l1 + l2)
+
+        #+end_src
+** longest common substring
+*** Code
+#+begin_src python
+import numpy as np
+
+def LCSubstr(s1,s2):
+    L,ind=get_L_and_ind_ready(s1,s2)
+    mx = int(L[ind])
+    i,j = ind
+    return s1[i + 1 - mx:i+1]
+
+def get_L_and_ind_ready(s1,s2):
+    L = get_common_array(s1,s2)
+    L = accum_common_array(L)
+    ind = get_max_index(L)
+    return L, ind
+
+def get_common_array(s1,s2):
+    l1, l2 = len(s1), len(s2)
+    L = np.zeros((l1,l2))
+    for i in range(l1):
+        for j in range(l2):
+            if s1[i] == s2[j]:
+                L[i,j] = 1
+    return L
+
+def accum_common_array(L):
+    for i in range(1,L.shape[0]):
+        for j in range(1,L.shape[1]):
+            L[i,j] += L[i-1,j-1]
+    return L
+
+def get_max_index(a):
+    return np.unravel_index(np.argmax(a, axis=None), a.shape)
+
+    #+end_src
+*** Test
+#+begin_src python
+from m2 import *
+from numpy import array
+
+import pytest
+import numpy as np
+
+@pytest.mark.parametrize(
+    "s1,s2,a2",
+    [
+        ('abc', 'dbf', array([[0,0,0],[0,1,0],[0,0,0]])),
+        ('aa', 'aa', np.ones((2,2),dtype=int)),
+        ('ba', 'ab', array([[0,1],[1,0]])),
+        ('ababc', 'babca', array([
+            [0,1,0,0,1],
+            [1,0,1,0,0],
+            [0,1,0,0,1],
+            [1,0,1,0,0],
+            [0,0,0,1,0]
+        ])),
+    ]
+                         )
+def test_get_common_array(s1,s2,a2):
+    a1 = get_common_array(s1, s2)
+    assert np.array_equal(a1,a2)
+
+@pytest.mark.parametrize(
+    "L,Le",
+    [
+        (np.ones((2,2),dtype=int),  array([[1,1],[1,2]])),
+        (np.ones((3,3),dtype=int),  array([[1,1,1],
+                                           [1,2,2],
+                                           [1,2,3]])),
+    ]
+)
+def test_accum_common_array(L,Le):
+    L2 = accum_common_array(L)
+    assert np.array_equal(L2,Le)
+
+@pytest.mark.parametrize(
+    "a,ind",
+    [
+        (np.arange(6).reshape(2,3) + 10, (1,2)),
+        (array([[1,0],[2,0]]), (1,0)),
+        (array([[1,1],[1,1]]), (0,0)),
+    ]
+)
+def test_get_max_index(a,ind):
+    assert get_max_index(a) == ind
+
+
+@pytest.mark.parametrize(
+    "s1,s2,s",
+    [
+        ('ababc','babca','babc'),
+        ('cac','cac','cac'),
+        ('dbabczz','ttabcjj','abc')
+    ]
+)
+def test_get_L_and_ind_ready(s1,s2,s):
+
+    L,ind = get_L_and_ind_ready(s1,s2)
+
+    mx = int(L[ind])
+    i,j = ind
+
+    sa1 =  s1[i + 1 - mx:i+1]
+    sa2 =  s2[j + 1 - mx:j+1]
+    print(f'max: {mx}, i: {i}, j: {j}, \nL:\n {L}')
+
+    assert sa1 == sa2
+    assert sa1 == s
+
+    #+end_src
+** longest palindrome
+*** code
+#+begin_src python
+  class Solution:
+      def longestPalindrome(self, s: str) -> str:
+          le = len(s)
+          if le < 2: return s
+
+          # --------------------------------------------------
+          s1 = self.get_longest_odd_pal(s)
+          s2 = self.get_longest_even_pal(s)
+
+          return s1 if len(s1) > len(s2) else s2
+
+      def get_longest_odd_pal(self,s):
+          ind,l = self.get_max_odd_pal(s)
+          return s[ind+1-l:ind+l]
+
+      def get_longest_even_pal(self,s):
+          ind,l = self.get_max_even_pal(s)
+          return s[ind+1-l:ind+1+l]
+
+      def get_max_odd_pal(self,s):
+          """
+          The maximum odd pal is s[i+1-l:i+l]
+          """
+          ind , l = 0 , 1
+          le = len(s) - 1
+          for i in range(le + 1):
+              l0 = self.find_l(s,i2=i,j2=i,le=le)
+              #print(f'\tl0 = {l0} at {i}')
+              if l0 > l:
+                  #print(f'\tUpdating max length={l0} at {i}')
+                  ind, l = i,l0
+          return (ind,l)
+
+
+      def get_max_even_pal(self,s):
+          """
+          The maximum even pal is s[i+1-l:i+1+l]
+          s should be longer than 2
+          """
+
+          le = len(s) - 1
+          ind , l = 0 , 0
+          for i in range(le):
+              l0 = self.find_l(s,i2=i+1,j2=i,le=le)
+              ##print(f'\tl0 = {l0} at {i}')
+              if l0 > l:
+                  #print(f'\tUpdating max length={l0} at {i}')
+                  ind, l = i,l0
+          return (ind,l)
+
+      def find_l(self,s,i2,j2,le,l=0):
+
+          while (i2 <= le and j2 >= 0) and s[i2] == s[j2]:
+              #print(f'Checking ({i2}) -- ({j2})')
+              l += 1
+              i2+=1
+              j2-=1
+
+          return l
+
+#+end_src
+*** test
+#+begin_src python
+from m2 import Solution
+from collections import namedtuple
+def pytest_generate_tests(metafunc):
+    l1 = ['babad','cbbd','cbabba']
+    l2 = ['bab','bb','abba']
+
+    P = namedtuple('P', ['l1','l2'])
+    if 'db' in metafunc.fixturenames:
+        metafunc.parametrize('db',
+                         [
+                             P(l1[0],l2[0]),
+                             P(l1[1],l2[1]),
+                             P(l1[2],l2[2]),
+                         ]
+                         )
+
+s = Solution()
+
+def test_pal(db):
+    assert db.l2 == s.longestPalindrome(db.l1)
+
+    #+end_src
+** zigzag convertion
+*** code
+#+begin_src python
+  class Solution:
+      def convert(self, s: str, numRows: int) -> str:
+          if len(s) <= 2: return s
+          if numRows <= 1: return s
+
+          out = ''
+          L= [2*i-2 for i in range(1,numRows+1)]
+          for i in range(numRows):
+              row = self.pop_string_on_this_row(s,i,L)
+              #print(f'{i}th row: {row}')
+              out += row
+          return out
+
+      def pop_string_on_this_row(self,s,i,L):
+          """
+          Return the ith row of i.
+          L should be [0,1,3,...,2n-3],
+          where n is the number of row
+          """
+          out = ''
+          t = False
+          step = 1                # any number > 0 will do
+
+          l = len(s)
+          #print(f'L is {L}')
+          j = i
+          while j < l:
+              if step != 0:
+                  out += s[j]
+                  #print(f'\tRead in {s[j]}')
+              step = L[i] if t else L[len(L)-1-i]
+              j += step
+              #print(f'Next step is {step}, now j={j}')
+              t = not t
+          return out
+    #+end_src
+*** test
+#+begin_src python
+  from m import Solution
+  from collections import namedtuple
+  import pytest
+
+  S = Solution()
+
+
+  def pytest_generate_tests(metafunc):
+      s = 'paypalishiring'
+      r = ['pahn','aplsiig','yir']
+
+      P = namedtuple('P', ['s','n','i','r'])
+      if 'db' in metafunc.fixturenames:
+          metafunc.parametrize('db',
+                           [
+                               P(s,3,0,r[0]),
+                               P(s,3,1,r[1]),
+                               P(s,3,2,r[2]),
+                           ]
+                           )
+      P2 = namedtuple('P2',['s','r','n'])
+      if 'db2' in metafunc.fixturenames:
+          metafunc.parametrize('db2',
+                           [
+                               P2(s,r[0] + r[1] + r[2],3),
+                               P2(s, "pinalsigyahrpi", 4),
+                               P2('A','A',1)
+                           ]
+                           )
+
+  def test_pop_string_on_this_row(db):
+      L= [2*i-2 for i in range(1,db.n+1)]
+      assert db.r==S.pop_string_on_this_row(s=db.s,i=db.i,L=L)
+
+  def test_convert(db2):
+      assert db2.r == S.convert(db2.s,db2.n)
+
+    #+end_src
+** reverse integer
+*** code
+#+begin_src python
+class Solution:
+    def reverse(self, x: int) -> int:
+        out = 0
+        # handle sign
+        neg = x < 0
+        x = abs(x)
+
+        while x > 0:
+            out = out*10 + x % 10
+            x //=10
+            # print(f'out={out}\tx={x}')
+
+        if neg:
+            out *= -1
+
+        mx = 2 ** 31 - 1
+        mn = -2**31
+        if out > mx or out < mn: return 0
+
+        return out
+
+        #+end_src
+*** test
+#+begin_src python
+from m import Solution
+from collections import namedtuple
+S = Solution()
+
+
+def pytest_generate_tests(metafunc):
+
+    P = namedtuple('P', ['x','r'])
+
+    mx = (1 << 31) - 1          # == 2**31 - 1
+    mn = ~(1 << 31) + 1          # == -2**31
+    if 'db' in metafunc.fixturenames:
+        metafunc.parametrize('db',
+                         [
+                             P(123,321),
+                             P(1534236469,0),
+                             P(-123,-321)
+                         ]
+                         )
+
+def test_reverse(db):
+    assert db.r == S.reverse(db.x)
+
+
+    #+end_src
+** string to integer (atoi)
+*** code
+#+begin_src python
+class Solution:
+    def myAtoi(self, s: str) -> int:
+        # S1: Remove leading white space
+        s = s.lstrip()
+
+        if s == '': return 0
+
+        #print(f'Reading sign:--------------------------------------------------')
+
+        neg = False
+        if s[0] == '-':
+            s = s[1:]
+            neg = True
+        elif s[0] == '+':
+            s = s[1:]
+
+        if s == '': return 0
+
+        s = self.get_dig(s)
+        d = self.chr2dig(s)
+
+        if neg:
+            return max(d*-1, -2**31)
+
+        return min(2**31 - 1, d)
+
+    def get_dig(self,s):
+        #print(f'Getting digits:--------------------------------------------------')
+
+        out = ''
+        while s != '' and s[0] in '0123456789':
+            out += s[0]
+            s=s[1:]
+            #print(f'out={out}\t<- s={s}')
+        return out
+
+    def chr2dig(self,s):
+        d = dict(zip('0123456789',range(10)))
+        out = 0
+
+        #print(f'Converting digits:--------------------------------------------------')
+        while s != '':
+            out = out * 10 + d[s[0]]
+            s = s[1:]
+            #print(f'out={out} <- s={s}')
+
+        return out
+
+
+        #+end_src
+*** test
+#+begin_src python
+from m import Solution
+from collections import namedtuple
+S = Solution()
+
+
+def pytest_generate_tests(metafunc):
+    P = namedtuple('P', ['s','r'])
+    if 'db' in metafunc.fixturenames:
+        metafunc.parametrize('db',
+                         [
+                             P('ab',''),
+                             P('01ab','01'),
+                             P('01','01'),
+                             P('p123',''),
+                         ])
+
+    if 'db2' in metafunc.fixturenames:
+        metafunc.parametrize('db2',
+                         [
+                             P('123',123),
+                             P('0123',123),
+                             P('3',3),
+                             P('030',30),
+                             P('30',30),
+                         ])
+
+    if 'db3' in metafunc.fixturenames:
+        metafunc.parametrize('db3',
+                         [
+                             P('30',30),
+                             P('+30',30),
+                             P('-30',-30),
+
+                             P('30a',30),
+                             P('+30a',30),
+                             P('-30ab',-30),
+
+
+                             P('030a',30),
+                             P('+030a',30),
+                             P('-030ab',-30),
+
+                             P('-',0),
+                             P('ab',0),
+                             P('-ab',0),
+                             P('+ab',0),
+                             P("-91283472332",-2147483648)  # clamped to -2**31
+
+                         ])
+
+def test_get_dig(db):
+    assert S.get_dig(db.s) == db.r
+
+def test_chr2dig(db2):
+    assert S.chr2dig(db2.s) == db2.r
+
+def test_myAtoi(db3):
+    assert S.myAtoi(db3.s) == db3.r
+
+    #+end_src
+** palindrome number
+*** code
+#+begin_src python
+class Solution:
+    def isPalindrome(self, x: int) -> bool:
+        s = '%d' % x
+        return s == s[::-1]
+        #+end_src
+*** test
+#+begin_src python
+from m import Solution
+from collections import namedtuple
+S = Solution()
+
+
+def pytest_generate_tests(metafunc):
+    P = namedtuple('P', ['x','r'])
+    if 'db' in metafunc.fixturenames:
+        metafunc.parametrize('db',
+                         [
+                             P(123,False),
+                             P(121,True),
+                             P(-123,False),
+                         ])
+
+def test_isPalindrome(db):
+    assert S.isPalindrome(db.x) == db.r
+
+    #+end_src
+** regular expression match
+*** Recursion
+#+begin_src python
+class Solution(object):
+    def isMatch(self, text, pattern):
+        if not pattern:
+            return not text
+
+        first_match = bool(text) and pattern[0] in {text[0], '.'}
+
+        if len(pattern) >= 2 and pattern[1] == '*':
+            return (self.isMatch(text, pattern[2:]) or
+                    first_match and self.isMatch(text[1:], pattern))
+        else:
+            return first_match and self.isMatch(text[1:], pattern[1:])
+            #+end_src
+*** Dynamic programming
+#+begin_src python
+  class Solution(object):
+      def isMatch(self, text, pattern):
+          memo = {}
+          def dp(i, j):
+              if (i, j) not in memo:
+                  if j == len(pattern):
+                      ans = i == len(text)
+                  else:
+                      first_match = i < len(text) and pattern[j] in {text[i], '.'}
+                      if j+1 < len(pattern) and pattern[j+1] == '*':
+                          ans = dp(i, j+2) or first_match and dp(i+1, j)
+                      else:
+                          ans = first_match and dp(i+1, j+1)
+
+                  memo[i, j] = ans
+              return memo[i, j]
+
+          return dp(0, 0)
+        #+end_src
+** Container with most water
+*** code
+#+begin_src python
+from typing import List
+class Solution:
+
+    def maxArea(self, height: List[int]) -> int:
+        a = 0
+        L = len(height)
+        j = 0
+        i = L - 1
+
+        while i > j:
+            # print(f'Loop {i}-{j}')
+            hi = height[i]
+            hj = height[j]
+            a = max(a,(i-j)*min(hi,hj))
+            if hi > hj:
+                j += 1
+            elif hi < hj:
+                i -= 1
+            else:                       # hi = hj
+                j += 1
+                i -= 1
+        return a
+
+#+end_src
+*** test
+#+begin_src python
+from m import Solution
+from collections import namedtuple
+S = Solution()
+
+def pytest_generate_tests(metafunc):
+    P = namedtuple('P', ['s','r'])
+    if 'db' in metafunc.fixturenames:
+        metafunc.parametrize('db',
+                         [
+                             P([1,8,6,2,5,4,8,3,7],49),
+                             P([1,1],1),
+                             P([1,3,2,5,25,24,5],24),
+                         ])
+
+def test_maxArea(db):
+    assert S.maxArea(db.s) == db.r
+
+    #+end_src
+** integer to roman
+*** code
+#+begin_src python
+class Solution:
+    def intToRoman(self, num: int) -> str:
+        k = [1,4,5,9,10,40,
+             50,90,100,400,500,900,
+             1000]
+        v = ['I','IV','V','IX','X','XL',
+             'L','XC','C','CD','D','CM',
+             'M'
+             ]
+        d = dict(zip(k,v))
+
+        r = ''
+        for x in k[::-1]:
+            n = num // x
+            r += n * d[x]
+            # print(f'Checking {x} in {num}: Found {n}, now r={r}')
+            num -= n * x
+        return r
+
+        #+end_src
+*** test
+#+begin_src python
+from m import Solution
+from collections import namedtuple
+S = Solution()
+
+def pytest_generate_tests(metafunc):
+    P = namedtuple('P', ['s','r'])
+    if 'db' in metafunc.fixturenames:
+        metafunc.parametrize('db',
+                         [
+                             P(3,'III'),
+                             P(58,'LVIII'),
+                             P(1994,'MCMXCIV'),
+                         ])
+
+def test_f(db):
+    assert S.intToRoman(db.s) == db.r
+
+    #+end_src
+** roman to integer
+*** code
+#+begin_src python
+class Solution:
+    def romanToInt(self, s: str) -> int:
+        v = [1,4,5,9,10,40,
+             50,90,100,400,500,900,
+             1000]
+        k = ['I','IV','V','IX','X','XL',
+             'L','XC','C','CD','D','CM',
+             'M'
+             ]
+        d = dict(zip(k,v))
+
+
+        r = 0
+        for x in k[::-1]:
+            while s:            # s is not empty
+                # print(f'Checking {x}')
+                if s.startswith(x):
+                    s = s[len(x):]
+                    r += d[x]
+                    print(f'Found one, now r={r}, s={s}')
+                else:
+                    break
+        return r
+
+        #+end_src
+*** test
+#+begin_src python
+from m import Solution
+from collections import namedtuple
+S = Solution()
+
+def pytest_generate_tests(metafunc):
+    P = namedtuple('P', ['s','r'])
+    if 'db' in metafunc.fixturenames:
+        metafunc.parametrize('db',
+                         [
+                             P('III',3),
+                             P('LVIII',58),
+                             P('MCMXCIV',1994),
+                         ])
+
+def test_romanToInt(db):
+    assert S.romanToInt(db.s) == db.r
+
+    #+end_src
+** Longest Common Prefix
+*** code
+#+begin_src python
+from typing import List
+from time import sleep
+
+
+class Solution:
+    def longestCommonPrefix(self, strs: List[str]) -> str:
+        i = 0
+        s0 = strs[0]
+        if not s0:
+            return s0
+
+        minlen = min([len(s) for s in strs])
+
+        while i < minlen and all([s0[i]==s[i] for s in strs]):
+            # print(f'Match {s0[i]}')
+            i += 1
+            # sleep(1)
+
+        return s0[0:i]
+        #+end_src
+*** test
+#+begin_src python
+from m import Solution
+from collections import namedtuple
+S = Solution()
+
+def pytest_generate_tests(metafunc):
+    P = namedtuple('P', ['s','r'])
+    if 'db' in metafunc.fixturenames:
+        metafunc.parametrize('db',
+                         [
+                             P(["flower","flow","flight"],'fl'),
+                             P(["dog","racecar","car"],''),
+                             P([''],''),
+                             P(['a'],'a'),
+                         ])
+
+def test_romanToInt(db):
+    assert S.longestCommonPrefix(db.s) == db.r
+
+    #+end_src
+* End
+
+# Local Variables:
+# org-what-lang-is-for: "python"
+# End:

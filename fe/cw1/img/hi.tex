@@ -1,0 +1,19 @@
+\documentclass{article}
+\title{test}
+\usepackage{geometry}\geometry{
+  a4paper,
+  total={170mm,257mm},
+  left=20mm,
+  top=20mm,
+  }
+  \author{Jianer Cong}
+  \date{\today}
+  \usepackage{pgfmath}
+  \begin{document}
+  \pgfmathparse{1+1}
+  \def\myget#1.#2{#1}         %get the value before decimal
+  % \def\v{ \myget({\pgfmathresult)} }
+  Result: \pgfmathresult{}, Int result:
+  % \myget1.2
+  \expandafter\myget\pgfmathresult{}
+  \end{document}

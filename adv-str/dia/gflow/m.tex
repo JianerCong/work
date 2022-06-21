@@ -1,0 +1,28 @@
+\documentclass[border=0.2cm]{standalone}
+\title{GSA Analysis Iteration Procedure}
+\author{Jianer Cong}
+\usepackage{tikz}
+\usepackage{minted}
+\usemintedstyle{vs}
+\setminted{bgcolor=gray!30}             %all lang has ling numbers
+
+% Use Cascadia code for texttt
+\usepackage{fontspec}
+\setmonofont{Cascadia}[
+Path=/usr/share/fonts/truetype/Cascadia_Code/,
+Scale=0.85,
+Extension = .ttf,
+UprightFont=*Code,              %find CascadiaCode.ttf
+BoldFont=*CodePL,               %find CascadiaCodePL.ttf ...
+ItalicFont=*CodeItalic,
+BoldItalicFont=*CodePLItalic
+]
+
+% tikz libraries
+\usetikzlibrary{shapes} % ellipse node shape
+\usetikzlibrary{shapes.multipart} % for line breaks in node text
+\usetikzlibrary{arrows.meta}    %-o arrow head
+\usetikzlibrary{arrows}
+\begin{document}
+\input{d}
+\end{document}
