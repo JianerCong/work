@@ -8,8 +8,9 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize('db',
                          [
                              P([-1,0,1,2,-1,4],
-                               [{-1,0,1},{-1,-1,2}]
+                               [[-1,0,1],[-1,-1,2]]
                                ),
+                             P([0,0,0],[[0,0,0]]),
                              P([0],[]),
                              P([],[])
                          ])
