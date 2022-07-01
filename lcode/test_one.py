@@ -26,5 +26,3 @@ def test_threeSum(db):
     # order doesn't matter
     assert S.threeSum(db.s) == db.r
 
-def test_make_sets(db2):
-    assert S.make_sets(db2.s) == db2.r
