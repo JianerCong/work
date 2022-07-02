@@ -1067,6 +1067,142 @@ def test_romanToInt(db):
     assert S.longestCommonPrefix(db.s) == db.r
 
     #+end_src
+** 3 sum
+*** code
+#+begin_src python
+  from typing import Dict, List
+  class Solution:
+      def threeSum(self, nums: List[int]) -> List[List[int]]:
+          nums.sort()
+
+          out = []
+
+          L = len(nums)
+          for i in range(L-2):
+              if i == 0 or (i > 0 and nums[i] != nums[i-1]):
+                  # for each unique first entry
+                  # solve a two sum
+                  pa = i + 1
+                  pb = L - 1
+
+                  #print(f'Starting two sum pa={pa}, pb={pb}')
+                  while pa < pb:
+                      r =  nums[pa] + nums[pb] + nums[i]
+                      if r == 0:
+                          # add the triplet
+                          out.append([nums[i], nums[pa], nums[pb]])
+                          # skip duplicate second entries and third entries
+                          # by moving to the last duplicate
+                          while pa < pb and nums[pa+1] == nums[pa]: pa+=1
+                          while pa < pb and nums[pa-1] == nums[pb]: pa-=1
+
+                          # step to the first non-duplicate entry
+                          pa+=1
+                          pb-=1
+                      elif r > 0:
+                          pb-=1
+                      else:
+                          pa+=1
+          return out
+
+        #+end_src
+*** test
+#+begin_src python
+from m import Solution
+from collections import namedtuple
+S = Solution()
+
+def pytest_generate_tests(metafunc):
+    P = namedtuple('P', ['s','r'])
+    if 'db' in metafunc.fixturenames:
+        metafunc.parametrize('db',
+                         [
+                             P([-1,0,1,2,-1,4],
+                               [[-1,0,1],[-1,-1,2]]
+                               ),
+                             P([0,0,0],[[0,0,0]]),
+                             P([0],[]),
+                             P([],[])
+                         ])
+
+def test_threeSum(db):
+    # order doesn't matter
+    o = S.threeSum(db.s)
+    assert len(o) == len(db.r)
+    for i in db.r:
+        assert i in o
+
+
+        #+end_src
+*** c++
+#+begin_src c++
+#include <type_traits>
+#include <vector>
+#include <algorithm>    // std::sort
+#include <cstdio>
+
+
+using std::vector;
+
+class Solution {
+public:
+  vector<vector<int>> threeSum(vector<int>& nums) {
+    std::sort(nums.begin(),nums.end());
+
+    vector<vector<int>> out;
+
+    int L = nums.size();
+    int pa, pb, r;
+
+    for (int i = 0; i < L-1; i++){
+      if (i == 0 || (i > 0 && nums[i] != nums[i-1])){
+        pa = i + 1;
+        pb = L - 1;
+
+        while (pa < pb){
+          r =  nums[pa] + nums[pb] + nums[i];
+          if (r == 0){
+            out.push_back(vector<int>({nums[i], nums[pa], nums[pb]}));
+
+            while (pa < pb && nums[pa+1] == nums[pa]) pa++;
+            while (pa < pb && nums[pb-1] == nums[pb]) pb--;
+
+            pa++;pb--;
+          }else if(r > 0)
+            pb--;
+          else
+            pa++;
+        }
+      }
+    }
+    return out;
+  }
+};
+
+
+
+int main(int argc, char *argv[]){
+  Solution S;
+
+  vector<vector<int>> o0 = {
+    {-1,0,1},
+    {-1,-1,2}
+  };
+
+  auto ve = vector<int>({-1,0,1,2,-1,4});
+  auto o1 = S.threeSum(ve);
+
+  for (auto v : o1){
+    for (auto i : v){
+      printf("%d ",i);
+}
+    printf("\n");
+}
+  printf("hi\n");
+  return 0;
+}
+
+#+end_src
 * End
 
 # Local Variables:

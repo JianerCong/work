@@ -14,15 +14,11 @@ def pytest_generate_tests(metafunc):
                              P([0],[]),
                              P([],[])
                          ])
-    if 'db2' in metafunc.fixturenames:
-        metafunc.parametrize('db2',
-                         [
-                             P([-1,0,1,2,-1,4],
-                               (1,{-1,0,1,2,4},{-1})
-                               ),
-                         ])
 
 def test_threeSum(db):
     # order doesn't matter
-    assert S.threeSum(db.s) == db.r
+    o = S.threeSum(db.s)
+    assert len(o) == len(db.r)
+    for i in db.r:
+        assert i in o
 
