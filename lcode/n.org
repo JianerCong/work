@@ -1203,6 +1203,215 @@ int main(int argc, char *argv[]){
 }
 
 #+end_src
+** 3 sum closest
+*** python
+#+begin_src python
+from typing import List
+from numpy import array
+
+class Solution:
+    def threeSumClosest(self, nums: List[int], target: int) -> int:
+        nums = array(nums)
+        nums.sort()
+        result = nums[0] + nums[1] + nums[-1]
+
+        L = len(nums)
+        for i in range(L-2):
+            if i > 0 and nums[i-1] == nums[i]:
+                continue
+            pa = i + 1
+            pb = L - 1
+
+            while pa < pb:
+                current_sum = nums[i] + nums[pa] + nums[pb]
+
+                if current_sum == target:
+                    return current_sum
+                elif current_sum > target:
+                    # decrement to next nums[pb]
+                    pb -= 1
+                else:
+                    # increment to next nums[pa]
+                    pa += 1
+
+                if abs(current_sum - target) < abs(result - target):
+                    result = current_sum
+
+        return result
+
+        #+end_src
+*** cpp
+#+begin_src c++
+#include <vector>
+#include <algorithm>    // std::sort
+#include <cstdio>
+#include <cmath>                // abs
+
+
+using std::vector;
+
+
+
+class Solution {
+public:
+  int threeSumClosest(vector<int>& nums, int target) {
+    std::sort(nums.begin(), nums.end());
+
+    int result =  nums[0] + nums[1] + nums[2];
+    int L = nums.size();
+
+    for (int i=0;i<L-2;i++){
+      if (i > 0 && nums[i-1] == nums[i])
+        continue;
+      int pa = i + 1;
+      int pb = L - 1;
+
+      while (pa < pb){
+        int current_sum = nums[i] + nums[pa] + nums[pb];
+
+        if (current_sum == target)
+          return current_sum;
+        else if (current_sum > target)
+          pb--;
+        else
+          pa++;
+
+        if (abs(current_sum - target) < abs(result - target))
+          result = current_sum;
+      }
+    }
+    return result;
+  }
+};
+int main(int argc, char *argv[]){
+  Solution S;
+
+  auto v = vector<int>({-1,2,1,-4});
+  printf("Should be 2, it's %d\n", S.threeSumClosest(v,1));
+  return 0;
+  }
+
+  #+end_src
+*** test
+#+begin_src python
+from m import Solution
+from collections import namedtuple
+S = Solution()
+
+def pytest_generate_tests(metafunc):
+    P = namedtuple('P', ['nums','target','r'])
+    if 'db' in metafunc.fixturenames:
+        metafunc.parametrize('db',
+                         [
+                             P([-1,2,1,-4],1,2),
+                             P([0,0,0], 1,0),
+                             P([-1,0,1,1,55],3,2),
+                         ])
+
+def test_threeSum(db):
+    assert S.threeSumClosest(db.nums, db.target) == db.r
+
+
+    #+end_src
+** letter combinations
+*** code
+#+begin_src python
+from typing import List
+
+class Solution:
+    def letterCombinations(self, digits: str) -> List[str]:
+        l = []
+        if len(digits) == 0: return l
+        l.append('')
+
+        m = ['0','1','abc','def','ghi','jkl',
+             'mno','pqrs','tuv','wxyz']
+
+        for i in range(len(digits)):
+            index = int(digits[i])
+            while len(l[0]) == i:  # for all entries of length i
+                p = l[0]; l=l[1:]  # remove from queue
+                for c in m[index]:
+                    l.append(p + c)  # add the permutation
+        return l
+
+        #+end_src
+*** test
+#+begin_src python
+from m import Solution
+from collections import namedtuple
+S = Solution()
+
+def pytest_generate_tests(metafunc):
+    P = namedtuple('P', ['x','r'])
+    if 'db' in metafunc.fixturenames:
+        metafunc.parametrize('db',
+                         [
+                             P("23",["ad","ae","af","bd","be","bf","cd","ce","cf"]),
+                             P("", []),
+                             P("2",["a", "b", "c"])
+                         ])
+
+def test_letterCombinations(db):
+    assert S.letterCombinations(db.x) == db.r
+
+
+    #+end_src
+*** cpp
+#+begin_src c++
+#include <cstdio>
+#include <vector>
+#include <string>
+#include <queue>
+#include <cstdlib>              // atoi
+
+
+using std::string;
+using std::vector;
+
+class Solution {
+public:
+  vector<string> letterCombinations(string digits) {
+    vector<string> o;
+    if (digits.length() == 0) return o;
+
+    std::queue<string> q;q.push("");
+
+    string m[] = {"0","1","abc","def","ghi","jkl",
+        "mno","pqrs","tuv","wxyz"};
+
+    for (int i=0;i<digits.length();i++){
+      int index = digits[i] - '0';    // assume ascii encoding
+      while (q.front().length() == i){
+        string p = q.front(); q.pop();
+        for (char c : m[index])
+          q.push(p + c);
+      }
+    }
+
+    o.reserve(q.size());
+    while (!q.empty()){
+      o.push_back(q.front()); q.pop();
+    }
+    return o;
+  }
+};
+
+int main(int argc, char *argv[]){
+  Solution S;
+
+  string s = "23";
+  for (auto x : S.letterCombinations(s))
+    printf("%s ",x.c_str());
+
+  puts("");
+  //   for (auto i : "0123456789"){
+  //     printf("code for %c is %d\n", i, i);
+  // }
+  return 0;
+}
+
+#+end_src
 * End
 
 # Local Variables:

@@ -1,32 +1,30 @@
 from typing import List
-from numpy import array
-
 class Solution:
-    def threeSumClosest(self, nums: List[int], target: int) -> int:
-        nums = array(nums)
+    def fourSum(self, nums: List[int], target: int) -> List[List[int]]:
         nums.sort()
-        result = nums[0] + nums[1] + nums[-1]
+        res, quad = [],[]
 
-        L = len(nums)
-        for i in range(L-2):
-            if i > 0 and nums[i-1] == nums[i]:
-                continue
-            pa = i + 1
-            pb = L - 1
+        def kSum(k, start, target):
+            if k!= 2:
+                for i in range(start, len(nums) - k + 1):  # if k=4, reserve 3(=k-1)
+                    if i > start and nums[i] == nums[i-1]:
+                        continue         # skip duplicate this nums[i]
+                    quad.append(nums[i])  # push in the stack
+                    kSum(k-1,i+1,target - nums[i])           # solve a k-1 sum problem
+                    quad.pop()                               # done
+                return
+            # base case two sum II
+            l, r = start, len(nums) - 1
+            while l < r:
+                if nums[l] + nums[r] < target:
+                    l+=1
+                elif nums[l] + nums[r] > target:
+                    r-=1
+                else:           # found
+                    res.append(quad + [nums[l], nums[r]])
+                    l+=1
+                    while l < r and nums[l] == nums[l-1]:
+                        l+=1
 
-            while pa < pb:
-                current_sum = nums[i] + nums[pa] + nums[pb]
-
-                if current_sum == target:
-                    return current_sum
-                elif current_sum > target:
-                    # decrement to next nums[pb]
-                    pb -= 1
-                else:
-                    # increment to next nums[pa]
-                    pa += 1
-
-                if abs(current_sum - target) < abs(result - target):
-                    result = current_sum
-
-        return result
+        kSum(4, 0, target)
+        return res
