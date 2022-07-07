@@ -5,8 +5,10 @@ class Solution:
         res, quad = [],[]
 
         def kSum(k, start, target):
+            print(f"kSum called with {k}, {start}, {target}")
             if k!= 2:
                 for i in range(start, len(nums) - k + 1):  # if k=4, reserve 3(=k-1)
+                    print(f"\ti = {i}")
                     if i > start and nums[i] == nums[i-1]:
                         continue         # skip duplicate this nums[i]
                     quad.append(nums[i])  # push in the stack
