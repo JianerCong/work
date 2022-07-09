@@ -1412,6 +1412,147 @@ int main(int argc, char *argv[]){
 }
 
 #+end_src
+** 4sum
+*** python
+#+begin_src python
+from typing import List
+class Solution:
+    def fourSum(self, nums: List[int], target: int) -> List[List[int]]:
+        nums.sort()
+        res, quad = [],[]
+
+        def kSum(k, start, target):
+            print(f"kSum called with {k}, {start}, {target}")
+            if k!= 2:
+                for i in range(start, len(nums) - k + 1):  # if k=4, reserve 3(=k-1)
+                    print(f"\ti = {i}")
+                    if i > start and nums[i] == nums[i-1]:
+                        continue         # skip duplicate this nums[i]
+                    quad.append(nums[i])  # push in the stack
+                    kSum(k-1,i+1,target - nums[i])           # solve a k-1 sum problem
+                    quad.pop()                               # done
+                return
+            # base case two sum II
+            l, r = start, len(nums) - 1
+            while l < r:
+                if nums[l] + nums[r] < target:
+                    l+=1
+                elif nums[l] + nums[r] > target:
+                    r-=1
+                else:           # found
+                    res.append(quad + [nums[l], nums[r]])
+                    l+=1
+                    while l < r and nums[l] == nums[l-1]:
+                        l+=1
+
+        kSum(4, 0, target)
+        return res
+
+        #+end_src
+*** cpp
+#+begin_src c++
+#include <cstdio>
+#include <vector>
+#include <string>
+#include <stack>
+
+
+#include <algorithm>    // std::sort
+
+
+using std::string;
+using std::vector;
+
+
+class Solution {
+public:
+  vector<int> n;                // global data
+  vector<vector<int>> res;
+  vector<int> quad;
+
+  vector<vector<int>> fourSum(vector<int>& nums, int target) {
+    if (nums.size()<4) return res;
+
+    n = nums;
+    std::sort(n.begin(), n.end());
+
+    kSum(4,0,static_cast<long long>(target));
+    // kSum(4,0,target);
+    return res;
+  }
+
+  void kSum(int k, int start, long long target){
+    //printf("kSum called with k=%d, start=%d, target=%d\n", k, start, target);
+    if (k != 2){
+      for (int i =start;i < n.size()-k+1;i++){
+        // printf("\t i =%d\n",i);
+        if (i > start && n[i] == n[i-1])
+          continue;
+        quad.push_back(n[i]);
+        kSum(k-1, i+1, target - n[i]);
+        quad.pop_back();
+      }
+      return ;
+    }
+    // base case two sum II
+    int l = start, r = n.size() - 1;
+    while (l < r){
+      if (n[l] + n[r] < target)
+        l++;
+      else if (n[l] + n[r] > target)
+        r--;
+      else{
+        quad.push_back(n[l]);
+        quad.push_back(n[r]);
+        res.push_back(vector<int>(quad.begin(), quad.end())); // copy
+        quad.pop_back();
+        quad.pop_back();
+
+        l+=1;
+        while (l<r && n[l] == n[l-1]) l++;
+      }
+    }
+  }
+};
+
+int main(int argc, char *argv[]){
+  Solution S;
+
+  auto v = vector<int>{1,0,-1,0,-2,2};
+  auto o = S.fourSum(v, 0);
+  for (auto x : o){
+    for (auto i : x)
+      printf("%d ",i);
+    puts("");
+  }
+  //   for (auto i : "0123456789"){
+  //     printf("code for %c is %d\n", i, i);
+  // }
+  return 0;
+}
+
+#+end_src
+*** test
+#+begin_src python
+from m import Solution
+from collections import namedtuple
+S = Solution()
+
+def pytest_generate_tests(metafunc):
+    P = namedtuple('P', ['x','t','r'])
+    if 'db' in metafunc.fixturenames:
+        metafunc.parametrize('db',
+                         [
+                             P([1,0,-1,0,-2,2],0,[[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]),
+                             P([2,2,2,2,2], 8, [[2,2,2,2]]),
+                             P([0],0,[])
+                         ])
+
+def test_f(db):
+    assert S.fourSum(db.x, db.t) == db.r
+
+
+    #+end_src
 * End
 
 # Local Variables:
