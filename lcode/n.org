@@ -1553,6 +1553,170 @@ def test_f(db):
 
 
     #+end_src
+** Remove Nth Node from End of List
+*** python
+#+begin_src python
+from m import Solution, ListNode, l2L
+from collections import namedtuple
+S = Solution()
+
+def pytest_generate_tests(metafunc):
+    P = namedtuple('P', ['x','n','r'])
+    if 'db' in metafunc.fixturenames:
+        metafunc.parametrize('db',
+                         [
+                             P([1,2,3,4,5],2,'1,2,3,5'),
+                             P([1,2],1,'1'),
+                             P([1],1,'None'),
+                         ])
+
+    Q = namedtuple('Q', ['l','s'])
+    if 'db2' in metafunc.fixturenames:
+        metafunc.parametrize('db2',
+                         [
+                             Q([1,2,3],'1,2,3')
+                         ])
+def test_l2L(db2):
+    h = l2L(db2.l)
+    assert db2.s == str(h)
+
+def test_f(db):
+    h = S.removeNthFromEnd(l2L(db.x), db.n)
+    assert str(h) == db.r
+
+
+    #+end_src
+*** test
+#+begin_src python
+from typing import List, Optional
+
+# Definition for singly-linked list.
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+    def __str__(self):
+        s = str(self.val)
+        if self.next:
+            return s + ',' + str(self.next)
+        return s
+
+def l2L(l):
+    # l.reverse()
+    n = None
+    while len(l) > 0:
+        n = ListNode(l.pop(),next=n)  # contruct from bottom
+    return n
+
+class Solution:
+    def removeNthFromEnd(self, head: Optional[ListNode],
+                         n: int) -> Optional[ListNode]:
+        dummy = ListNode(0, head)
+        left = dummy
+        right = head
+
+        # initial condition, move right to l[n-1]
+        while n > 0 and right:
+            right = right.next
+            n-=1
+
+        while right:
+            left = left.next
+            right = right.next
+
+        # delete
+        left.next=left.next.next
+        return dummy.next
+
+        #+end_src
+*** c++
+#+begin_src c++
+#include <cstdio>
+#include <vector>
+#include <string>
+#include <stack>
+
+
+#include <algorithm>    // std::sort
+
+
+using std::string;
+using std::vector;
+
+// Definition for singly-linked list.
+struct ListNode {
+  int val;
+  ListNode *next;
+  ListNode() : val(0), next(nullptr) {}
+  ListNode(int x) : val(x), next(nullptr) {}
+  ListNode(int x, ListNode *next) : val(x), next(next) {}
+  void show(){
+    printf("%d",this->val);
+    if (this->next){
+      printf(" ");this->next->show();
+    }
+    else
+      puts("");
+  }
+};
+
+ListNode* l2L(vector<int> v){
+  ListNode *n = nullptr;
+  while (!v.empty()){
+    // printf("pushing %d\n",v.back());
+    n =  new ListNode(v.back(),n);
+    v.pop_back();
+  }
+  return n;
+}
+
+class Solution {
+public:
+  ListNode* removeNthFromEnd(ListNode* head, int n) {
+    ListNode * dummy,*left, *right;
+    dummy = new ListNode(0, head);
+    left = dummy;
+    right=head;
+    while (n > 0 && right){
+      right = right->next;
+      n--;
+}
+    while (right){
+      left = left->next;
+      right= right->next;
+}
+    // delete
+    left->next = left->next->next;
+    return dummy->next;
+  }
+};
+
+void clean(ListNode* h){
+  // clear the linked list
+  printf("Cleaning\n");
+  auto h1 = h;
+  while (h){
+    h = h->next;
+    delete h1;
+    h1=h;
+  }
+}
+
+int main(int argc, char *argv[]){
+  Solution S;
+
+  auto v = vector<int>{1,2,3,4,5};
+  ListNode* h = l2L(v);
+  // printf("Ready to show, h[0]=%d\n",h->val);
+  h->show();
+  h = S.removeNthFromEnd(h,2);
+  h->show();
+  clean(h);
+  return 0;
+}
+
+#+end_src
 * End
 
 # Local Variables:
