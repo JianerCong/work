@@ -1,44 +1,44 @@
 from typing import List, Optional
 
-# Definition for singly-linked list.
-class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val
-        self.next = next
-
-    def __str__(self):
-        s = str(self.val)
-        if self.next:
-            return s + ',' + str(self.next)
-        return s
-
-def l2L(l):
-    # l.reverse()
-    n = None
-    while len(l) > 0:
-        n = ListNode(l.pop(),next=n)  # contruct from bottom
-    return n
-
 class Solution:
-    def mergeTwoLists(self,
-                      l1: Optional[ListNode],
-                      l2: Optional[ListNode]) -> Optional[ListNode]:
-        dummy = ListNode()
-        tail = dummy
 
-        while l1 and l2:
-            if l1.val < l2.val:
-                tail.next = l1
-                l1 = l1.next
-            else:
-                tail.next = l2
-                l2 = l2.next
-            tail = tail.next
+    def generateParenthesis(self, n: int) -> List[str]:
+        stack = ''
+        res = []
 
-        if l1:
-            tail.next = l1
-        elif l2:
-            tail.next = l2
+        def b(openN, closedN):
+            if openN == closedN == n:  # chained comparison in Py
+                res.append(stack)
+                return
 
-        return dummy.next
+            if openN < n:
+                stack+="("
+                b(openN+1, closedN)
+                stack = stack[:-1]  # pop
 
+            if closedN < openN:
+                stack+=")"
+                b(openN, closedN+1)
+                stack = stack[:-1]
+        b(0,0)
+        return res
+    # def generateParenthesis(self, n: int) -> List[str]:
+    #     stack = []
+    #     res = []
+
+    #     def b(openN, closedN):
+    #         if openN == closedN == n:  # chained comparison in Py
+    #             res.append("".join(stack))
+    #             return
+
+    #         if openN < n:
+    #             stack.append("(")
+    #             b(openN+1, closedN)
+    #             stack.pop()
+
+    #         if closedN < openN:
+    #             stack.append(")")
+    #             b(openN, closedN+1)
+    #             stack.pop()
+    #     b(0,0)
+    #     return res

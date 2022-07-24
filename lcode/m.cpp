@@ -1,9 +1,13 @@
 #include <cstdio>
 #include <string>
 #include <stack>
+#include <vector>
+
 
 
 using std::string;
+using std::vector;
+
 
 
 // Definition for singly-linked list.
@@ -53,7 +57,7 @@ public:
 
     if (l1){
       tail->next = l1;
-        }else if(l2)
+    }else if(l2)
       tail->next = l2;
 
     return dummy->next;
