@@ -3,11 +3,8 @@
 #include <stack>
 #include <vector>
 
-
-
 using std::string;
 using std::vector;
-
 
 
 // Definition for singly-linked list.
@@ -25,55 +22,64 @@ struct ListNode {
     else
       puts("");
   }
+
+  ListNode* l2L(vector<int> v){
+    ListNode *n = nullptr;
+    while (!v.empty()){
+      // printf("pushing %d\n",v.back());
+      n =  new ListNode(v.back(),n);
+      v.pop_back();
+    }
+    return n;
+  }
 };
 
-ListNode* l2L(vector<int> v){
-  ListNode *n = nullptr;
-  while (!v.empty()){
-    // printf("pushing %d\n",v.back());
-    n =  new ListNode(v.back(),n);
-    v.pop_back();
-  }
-  return n;
-}
 
 
 class Solution {
 public:
-  ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
-    ListNode* dummy = new ListNode();
-    ListNode* tail = dummy;
+  ListNode* mergeKLists(vector<ListNode*>& lists) {
+    if (!lists || lists.empty()) return nullptr;
+
+    ListNode *l1, *l2;
+
+    while (lists.size()){
+      auto mergedLists = new vector<ListNode*>();
+
+      for (int i = 0; i < lists.size(); i+=2){
+        l1 = lists[i];
+        l2 = (i + 1) < lists.size() ? lists[i+1] : nullptr;
+        mergedLists.push_back(merge2(l1,l2));
+      }
+      lists = mergedLists;
+    }
+
+    return lists[0];
+  }
+
+  ListNode* merge2(ListNode* l1, ListNode* l2){
+    auto dummy = new ListNode();
+    auto tail = dummy;
 
     while (l1 && l2){
       if (l1->val < l2->val){
-        tail->next = l1;
+        tail->next= l1;
         l1 = l1->next;
       }else{
-        tail->next = l2;
+        tail->next= l2;
         l2 = l2->next;
       }
-      tail = tail->next;
     }
 
-    if (l1){
-      tail->next = l1;
-    }else if(l2)
-      tail->next = l2;
+    if (l1) tail->next = l1;
+    if (l2) tail->next = l2;
 
     return dummy->next;
-  }
+}
 };
 
 int main(int argc, char *argv[]){
   Solution S;
-
-  auto l1 = vector<int>{1,2,4};
-  auto l2 = vector<int>{1,3,4};
-  ListNode* h1 = l2L(l1);
-  ListNode* h2 = l2L(l2);
-  // printf("Ready to show, h[0]=%d\n",h->val);
-  auto h = S.mergeTwoLists(h1,h2);
-  h->show();
 
   return 0;
 }

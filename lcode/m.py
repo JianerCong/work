@@ -1,44 +1,53 @@
 from typing import List, Optional
 
+# Definition for singly-linked list.
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+    def __str__(self):
+        s = str(self.val)
+        if self.next:
+            return s + ',' + str(self.next)
+        return s
+    def l2L(l):
+        # l.reverse()
+        n = None
+        while len(l) > 0:
+            n = ListNode(l.pop(),next=n)  # contruct from bottom
+        return n
+
 class Solution:
+    def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:
+        if not lists or len(lists) == 0:
+            return None
 
-    def generateParenthesis(self, n: int) -> List[str]:
-        stack = ''
-        res = []
+        while len(lists) > 1:
+            mergedLists = []
 
-        def b(openN, closedN):
-            if openN == closedN == n:  # chained comparison in Py
-                res.append(stack)
-                return
+            for i in range(0, len(lists), 2):
+                l1 = lists[i]
+                l2 = lists[i + 1] if (i + 1) < len(lists) else None
+                mergedLists.append(self.merge2(l1,l2))
+            lists = mergedLists
+        return lists[0]
 
-            if openN < n:
-                stack+="("
-                b(openN+1, closedN)
-                stack = stack[:-1]  # pop
+    def merge2(self, l1,l2):
+        dummy = ListNode()
+        tail = dummy
 
-            if closedN < openN:
-                stack+=")"
-                b(openN, closedN+1)
-                stack = stack[:-1]
-        b(0,0)
-        return res
-    # def generateParenthesis(self, n: int) -> List[str]:
-    #     stack = []
-    #     res = []
+        while l1 and l2:
+            if l1.val < l2.val:
+                tail.next = l1
+                l1 = l1.next
+            else:
+                tail.next = l2
+                l2 = l2.next
+            tail = tail.next
+        if l1:
+            tail.next = l1
+        if l2:
+            tail.next = l2
 
-    #     def b(openN, closedN):
-    #         if openN == closedN == n:  # chained comparison in Py
-    #             res.append("".join(stack))
-    #             return
-
-    #         if openN < n:
-    #             stack.append("(")
-    #             b(openN+1, closedN)
-    #             stack.pop()
-
-    #         if closedN < openN:
-    #             stack.append(")")
-    #             b(openN, closedN+1)
-    #             stack.pop()
-    #     b(0,0)
-    #     return res
+        return dummy.next
