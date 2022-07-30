@@ -1,3 +1,10 @@
+
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
+
 #include <cstdio>
 #include <string>
 #include <stack>
@@ -22,8 +29,7 @@ struct ListNode {
     else
       puts("");
   }
-
-  ListNode* l2L(vector<int> v){
+  static ListNode* l2L(vector<int> v){
     ListNode *n = nullptr;
     while (!v.empty()){
       // printf("pushing %d\n",v.back());
@@ -31,7 +37,7 @@ struct ListNode {
       v.pop_back();
     }
     return n;
-  }
+}
 };
 
 
@@ -39,19 +45,29 @@ struct ListNode {
 class Solution {
 public:
   ListNode* mergeKLists(vector<ListNode*>& lists) {
-    if (!lists || lists.empty()) return nullptr;
+    //printf("Merging %ld lists\n",lists.size());
+    if (lists.empty()) return nullptr;
 
     ListNode *l1, *l2;
 
-    while (lists.size()){
+    while (lists.size()>1){
       auto mergedLists = new vector<ListNode*>();
 
       for (int i = 0; i < lists.size(); i+=2){
+        // sleep(1);
+        //printf("Looping i=%d\n",i);
         l1 = lists[i];
-        l2 = (i + 1) < lists.size() ? lists[i+1] : nullptr;
-        mergedLists.push_back(merge2(l1,l2));
+        l2 = ((i + 1) < lists.size()) ? lists[i+1] : nullptr;
+
+        //printf("Now l1 is: ");
+        // l1->show();
+        //printf("Now l2 is: ");
+        // if (l2 != nullptr) l2->show(); else printf("nullptr\n");
+
+        mergedLists->push_back(merge2(l1,l2));
       }
-      lists = mergedLists;
+      lists = *mergedLists;
+      //printf("Now lists size=%ld\n",lists.size());
     }
 
     return lists[0];
@@ -69,17 +85,28 @@ public:
         tail->next= l2;
         l2 = l2->next;
       }
+      tail = tail->next;
     }
 
-    if (l1) tail->next = l1;
-    if (l2) tail->next = l2;
+    if (l1)
+      tail->next = l1;
+    else if (l2)
+      tail->next = l2;
 
     return dummy->next;
-}
+  }
 };
 
 int main(int argc, char *argv[]){
   Solution S;
+
+  vector<ListNode*> l;
+  l.push_back(ListNode::l2L(vector<int>({1,4,5})));
+  l.push_back(ListNode::l2L(vector<int>({1,3,4})));
+  l.push_back(ListNode::l2L(vector<int>({2,6})));
+
+  auto r = S.mergeKLists(l);
+  r->show();
 
   return 0;
 }
